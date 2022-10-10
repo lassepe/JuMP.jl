@@ -25,6 +25,8 @@ end
 function _init_NLP(model::Model)
     if model.nlp_model === nothing
         model.nlp_model = MOI.Nonlinear.Model()
+        # TODO(odow): move this into MOI
+        model.ext[:nlp_constraint_names] = Dict{NonlinearConstraintRef,String}()
     end
     return
 end
@@ -524,6 +526,15 @@ function value(var_value::Function, c::NonlinearConstraintRef)
         c.model.nlp_model,
         c.model.nlp_model[index].expression,
     )
+end
+
+function name(c::NonlinearConstraintRef)
+    return get(c.model.ext[:nlp_constraint_names], c, "")
+end
+
+function set_name(c::NonlinearConstraintRef, name::String)
+    c.model.ext[:nlp_constraint_names][c] = name
+    return
 end
 
 ###
