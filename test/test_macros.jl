@@ -606,7 +606,7 @@ end
 function test_Error_on_unexpected_comparison()
     m = Model()
     @variable(m, x)
-    @test_macro_throws ErrorException @expression(m, x <= 1)
+    @test_throws ErrorException @expression(m, x <= 1)
     return
 end
 
@@ -618,8 +618,7 @@ function test_Warn_on_unexpected_assignment()
     # Julia v1.3 onwards
     # ERROR: MethodError: no method matching getindex(::VariableRef; i=1)
     @test_throws Union{ErrorException,MethodError} x[i = 1]
-    # err = ErrorException("Unexpected assignment in expression `x[i=1]`.")
-    @test_macro_throws ErrorException @constraint(m, x[i = 1] <= 1)
+    @test_throws MethodError @constraint(m, x[i = 1] <= 1)
     return
 end
 

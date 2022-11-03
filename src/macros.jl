@@ -389,9 +389,9 @@ function parse_constraint_head(
             "`ub >= expr >= lb` are supported.",
         )
     end
-    new_aff, parse_aff = _MA.rewrite(aff)
-    new_lb, parse_lb = _MA.rewrite(lb)
-    new_ub, parse_ub = _MA.rewrite(ub)
+    new_aff, parse_aff = _MA.rewrite(aff; move_factors_into_sums = false)
+    new_lb, parse_lb = _MA.rewrite(lb; move_factors_into_sums = false)
+    new_ub, parse_ub = _MA.rewrite(ub; move_factors_into_sums = false)
     parse_code = quote
         $parse_aff
         $parse_lb
@@ -472,7 +472,7 @@ function parse_constraint_call(
     func,
     set,
 )
-    f, parse_code = _MA.rewrite(func)
+    f, parse_code = _MA.rewrite(func; move_factors_into_sums = false)
     build_call = if vectorized
         :(build_constraint.($_error, _desparsify($f), Ref($(esc(set)))))
     else
@@ -507,7 +507,7 @@ function parse_constraint_call(
 )
     func = vectorized ? :($lhs .- $rhs) : :($lhs - $rhs)
     set = operator_to_set(_error, operator)
-    f, parse_code = _MA.rewrite(func)
+    f, parse_code = _MA.rewrite(func; move_factors_into_sums = false)
     # `_functionize` deals with the pathological case where the `lhs` is a
     # `VariableRef` and the `rhs` is a summation with no terms.
     f = :(_functionize($f))
@@ -1288,7 +1288,7 @@ macro objective(model, args...)
     end
     sense, x = args
     sense_expr = _moi_sense(_error, sense)
-    newaff, parsecode = _MA.rewrite(x)
+    newaff, parsecode = _MA.rewrite(x; move_factors_into_sums = false)
     code = quote
         $parsecode
         # Don't leak a `_MA.Zero` if the objective expression is an empty
@@ -1354,7 +1354,7 @@ macro expression(args...)
             "different name for the index.",
         )
     end
-    code = _MA.rewrite_and_return(x)
+    code = _MA.rewrite_and_return(x; move_factors_into_sums = false)
     code = quote
         # Don't leak a `_MA.Zero` if the expression is an empty summation, or
         # other structure that returns `_MA.Zero()`.
