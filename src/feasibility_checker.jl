@@ -15,11 +15,11 @@ end
 
 """
     primal_feasibility_report(
-        model::Model,
-        point::AbstractDict{VariableRef,Float64} = _last_primal_solution(model),
+        model::GenericModel{T},
+        point::AbstractDict{VariableRef,T} = _last_primal_solution(model),
         atol::Float64 = 0.0,
         skip_missing::Bool = false,
-    )::Dict{Any,Float64}
+    )::Dict{Any,T}
 
 Given a dictionary `point`, which maps variables to primal values, return a
 dictionary whose keys are the constraints with an infeasibility greater than the
@@ -50,11 +50,11 @@ Dict{Any,Float64} with 1 entry:
 ```
 """
 function primal_feasibility_report(
-    model::Model,
-    point::AbstractDict{VariableRef,Float64} = _last_primal_solution(model);
-    atol::Float64 = 0.0,
+    model::GenericModel{T},
+    point::AbstractDict{VariableRef,T} = _last_primal_solution(model);
+    atol::T = zero(T),
     skip_missing::Bool = false,
-)
+) where {T}
     return primal_feasibility_report(
         model;
         atol = atol,
@@ -74,10 +74,10 @@ end
 """
     primal_feasibility_report(
         point::Function,
-        model::Model;
-        atol::Float64 = 0.0,
+        model::GenericModel{t};
+        atol::T = 0.0,
         skip_missing::Bool = false,
-    )
+    ) where {T}
 
 A form of `primal_feasibility_report` where a function is passed as the first
 argument instead of a dictionary as the second argument.
@@ -98,11 +98,11 @@ Dict{Any,Float64} with 1 entry:
 """
 function primal_feasibility_report(
     point::Function,
-    model::Model;
-    atol::Float64 = 0.0,
+    model::GenericModel{T};
+    atol::T = zero(T),
     skip_missing::Bool = false,
-)
-    violated_constraints = Dict{Any,Float64}()
+) where {T}
+    violated_constraints = Dict{Any,T}()
     for (F, S) in list_of_constraint_types(model)
         _add_infeasible_constraints(
             model,
@@ -131,13 +131,13 @@ function primal_feasibility_report(
 end
 
 function _add_infeasible_constraints(
-    model::Model,
+    model::GenericModel{T},
     ::Type{F},
     ::Type{S},
     violated_constraints::Dict{Any,Float64},
     point_f::Function,
-    atol::Float64,
-) where {F,S}
+    atol::T,
+) where {T,F,S}
     for con in all_constraints(model, F, S)
         obj = constraint_object(con)
         d = _distance_to_set(value.(point_f, obj.func), obj.set)
@@ -149,11 +149,11 @@ function _add_infeasible_constraints(
 end
 
 function _add_infeasible_nonlinear_constraints(
-    model::Model,
-    violated_constraints::Dict{Any,Float64},
+    model::GenericModel{T},
+    violated_constraints::Dict{Any,T},
     point_f::Function,
-    atol::Float64,
-)
+    atol::T,
+) where {T}
     evaluator = NLPEvaluator(model)
     MOI.initialize(evaluator, Symbol[])
     g = zeros(num_nonlinear_constraints(model))

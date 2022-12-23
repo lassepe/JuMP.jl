@@ -77,7 +77,21 @@ An abstract type that should be subtyped for users creating JuMP extensions.
 """
 abstract type AbstractModel end
 
-mutable struct Model <: AbstractModel
+"""
+    value_type(::Type{<:Union{AbstractModel,AbstractVariableRef}})
+
+Return the return type of [`value`](@ref) for variables of that model.
+"""
+function value_type end
+
+value_type(::Type{<:AbstractModel}) = Float64
+
+"""
+    Model
+
+A mathematical model of an optimization problem.
+"""
+mutable struct GenericModel{T} <: AbstractModel
     # In MANUAL and AUTOMATIC modes, CachingOptimizer.
     # In DIRECT mode, will hold an AbstractOptimizer.
     moi_backend::MOI.AbstractOptimizer
@@ -109,7 +123,9 @@ mutable struct Model <: AbstractModel
     set_string_names_on_creation::Bool
 end
 
-function Base.getproperty(model::Model, name::Symbol)
+value_type(::Type{GenericModel{T}}) where {T} = T
+
+function Base.getproperty(model::GenericModel, name::Symbol)
     if name == :nlp_data
         error(
             "The internal field `.nlp_data` was removed from `Model` in JuMP " *
@@ -127,21 +143,23 @@ function Base.getproperty(model::Model, name::Symbol)
 end
 
 """
-    Model()
+    GenericModel{T}()
 
-Return a new JuMP model without any optimizer; the model is stored in
-a cache.
+Return a new JuMP model of value type `T` without any optimizer; the model is
+stored in a cache.
 
 Use [`set_optimizer`](@ref) to set the optimizer before calling
 [`optimize!`](@ref).
 """
-function Model()
+function GenericModel{T}() where {T}
     caching_opt = MOIU.CachingOptimizer(
-        MOIU.UniversalFallback(MOIU.Model{Float64}()),
+        MOIU.UniversalFallback(MOIU.Model{T}()),
         MOIU.AUTOMATIC,
     )
     return direct_model(caching_opt)
 end
+
+const Model = GenericModel{Float64}
 
 """
     Model(optimizer_factory; add_bridges::Bool = true)
@@ -165,8 +183,8 @@ env = Gurobi.Env()
 model = Model(() -> Gurobi.Optimizer(env); add_bridges = false)
 ```
 """
-function Model((@nospecialize optimizer_factory); add_bridges::Bool = true)
-    model = Model()
+function GenericModel{T}((@nospecialize optimizer_factory); add_bridges::Bool = true) where {T}
+    model = GenericModel{T}()
     set_optimizer(model, optimizer_factory; add_bridges = add_bridges)
     return model
 end
@@ -194,9 +212,9 @@ in mind the following implications of creating models using this *direct* mode:
 * The optimizer used cannot be changed the model is constructed.
 * The model created cannot be copied.
 """
-function direct_model(backend::MOI.ModelLike)
+function direct_model(backend::MOI.ModelLike, T::Type = Float64)
     @assert MOI.is_empty(backend)
-    return Model(
+    return GenericModel{T}(
         backend,
         Dict{MOI.ConstraintIndex,AbstractShape}(),
         Set{Any}(),
@@ -239,7 +257,7 @@ function direct_model(factory::MOI.OptimizerWithAttributes)
     return direct_model(optimizer)
 end
 
-Base.broadcastable(model::Model) = Ref(model)
+Base.broadcastable(model::GenericModel) = Ref(model)
 
 """
     backend(model::Model)
@@ -407,14 +425,19 @@ function bridge_constraints(model::Model)
 end
 
 function _moi_add_bridge(
-    model::Nothing,
-    BridgeType::Type{<:MOI.Bridges.AbstractBridge},
+    ::Nothing,
+    ::Type{<:MOI.Bridges.AbstractBridge},
+    ::Type,
 )
     # No optimizer is attached, the bridge will be added when one is attached
     return
 end
 
-function _moi_add_bridge(::MOI.ModelLike, ::Type{<:MOI.Bridges.AbstractBridge})
+function _moi_add_bridge(
+    ::MOI.ModelLike,
+    ::Type{<:MOI.Bridges.AbstractBridge},
+    ::Type,
+)
     return error(
         "Cannot add bridge if `add_bridges` was set to `false` in the `Model` ",
         "constructor.",
@@ -424,16 +447,18 @@ end
 function _moi_add_bridge(
     bridge_opt::MOI.Bridges.LazyBridgeOptimizer,
     BridgeType::Type{<:MOI.Bridges.AbstractBridge},
-)
-    MOI.Bridges.add_bridge(bridge_opt, BridgeType{Float64})
+    ::Type{T},
+) where {T}
+    MOI.Bridges.add_bridge(bridge_opt, BridgeType{T})
     return
 end
 
 function _moi_add_bridge(
     caching_opt::MOIU.CachingOptimizer,
     BridgeType::Type{<:MOI.Bridges.AbstractBridge},
-)
-    _moi_add_bridge(caching_opt.optimizer, BridgeType)
+    ::Type{T},
+) where {T}
+    _moi_add_bridge(caching_opt.optimizer, BridgeType, T)
     return
 end
 
@@ -448,13 +473,13 @@ unsupported constraints into an equivalent formulation using only constraints
 supported by the optimizer.
 """
 function add_bridge(
-    model::Model,
+    model::GenericModel{T},
     BridgeType::Type{<:MOI.Bridges.AbstractBridge},
-)
+) where {T}
     push!(model.bridge_types, BridgeType)
     # The type of `backend(model)` is not type-stable, so we use a function
     # barrier (`_moi_add_bridge`) to improve performance.
-    _moi_add_bridge(backend(model), BridgeType)
+    _moi_add_bridge(backend(model), BridgeType, T)
     return
 end
 

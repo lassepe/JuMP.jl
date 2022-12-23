@@ -84,7 +84,7 @@ function _dual_start(
             <:MOI.AbstractScalarSet,
         },
     },
-)::Union{Nothing,Float64}
+)::Union{Nothing,Number}
     return MOI.get(owner_model(con_ref), MOI.ConstraintDualStart(), con_ref)
 end
 function _dual_start(
@@ -95,7 +95,7 @@ function _dual_start(
             <:MOI.AbstractVectorSet,
         },
     },
-)::Union{Nothing,Vector{Float64}}
+)::Union{Nothing,Vector{<:Number}}
     return MOI.get(owner_model(con_ref), MOI.ConstraintDualStart(), con_ref)
 end
 
@@ -857,7 +857,7 @@ function _moi_add_to_function_constant(
             "$(typeof(ci))",
         )
     end
-    new_set = MOIU.shift_constant(set, convert(Float64, -value))
+    new_set = MOIU.shift_constant(set, -value)
     return MOI.set(model, MOI.ConstraintSet(), ci, new_set)
 end
 function _moi_add_to_function_constant(
@@ -908,14 +908,15 @@ con : [x + y + 1, x + 2, y + 2] ∈ MathOptInterface.SecondOrderCone(3)
 ```
 
 """
-function add_to_function_constant(
-    constraint::ConstraintRef{<:AbstractModel},
-    value,
-)
+function add_to_function_constant(constraint::ConstraintRef{M}, value) where {M}
     model = owner_model(constraint)
     # The type of `backend(model)` is not type-stable, so we use a function
     # barrier (`_moi_add_to_function_constant`) to improve performance.
-    _moi_add_to_function_constant(backend(model), index(constraint), value)
+    _moi_add_to_function_constant(
+        backend(model),
+        index(constraint),
+        _complex_convert(value_type(M), value),
+    )
     model.is_model_dirty = true
     return
 end
@@ -944,10 +945,13 @@ evaluation of `2x + 3y`.
 ```
 """
 function value(
-    con_ref::ConstraintRef{<:AbstractModel,<:MOI.ConstraintIndex};
+    con_ref::ConstraintRef{M,<:MOI.ConstraintIndex};
     result::Int = 1,
-)
-    return reshape_vector(_constraint_primal(con_ref, result), con_ref.shape)
+) where {M}
+    return reshape_vector(
+        _constraint_primal(con_ref, result, value_type(M)),
+        con_ref.shape,
+    )
 end
 
 """
@@ -974,8 +978,12 @@ function _constraint_primal(
         },
     },
     result::Int,
-)::Float64
-    return MOI.get(con_ref.model, MOI.ConstraintPrimal(result), con_ref)
+    ::Type{T},
+) where {T}
+    return convert(
+        T,
+        MOI.get(con_ref.model, MOI.ConstraintPrimal(result), con_ref),
+    )
 end
 function _constraint_primal(
     con_ref::ConstraintRef{
@@ -986,8 +994,12 @@ function _constraint_primal(
         },
     },
     result,
-)::Vector{Float64}
-    return MOI.get(con_ref.model, MOI.ConstraintPrimal(result), con_ref)
+    ::Type{T},
+) where {T}
+    return convert(
+        Vector{T},
+        MOI.get(con_ref.model, MOI.ConstraintPrimal(result), con_ref),
+    )
 end
 
 """
@@ -1013,11 +1025,11 @@ Use `has_dual` to check if a result exists before asking for values.
 See also: [`result_count`](@ref), [`shadow_price`](@ref).
 """
 function dual(
-    con_ref::ConstraintRef{<:AbstractModel,<:MOI.ConstraintIndex};
+    con_ref::ConstraintRef{M,<:MOI.ConstraintIndex};
     result::Int = 1,
-)
+) where {M}
     return reshape_vector(
-        _constraint_dual(con_ref, result),
+        _constraint_dual(con_ref, result, value_type(M)),
         dual_shape(con_ref.shape),
     )
 end
@@ -1032,8 +1044,12 @@ function _constraint_dual(
         },
     },
     result::Int,
-)::Float64
-    return MOI.get(con_ref.model, MOI.ConstraintDual(result), con_ref)
+    ::Type{T},
+) where {T}
+    return convert(
+        T,
+        MOI.get(con_ref.model, MOI.ConstraintDual(result), con_ref),
+    )
 end
 function _constraint_dual(
     con_ref::ConstraintRef{
@@ -1044,8 +1060,12 @@ function _constraint_dual(
         },
     },
     result::Int,
-)::Vector{Float64}
-    return MOI.get(con_ref.model, MOI.ConstraintDual(result), con_ref)
+    ::Type{T},
+) where {T}
+    return convert(
+        Vector{T},
+        MOI.get(con_ref.model, MOI.ConstraintDual(result), con_ref),
+    )
 end
 
 """
@@ -1489,15 +1509,15 @@ Subject to
 ```
 """
 function relax_with_penalty!(
-    model::Model,
+    model::GenericModel{T},
     penalties::Dict;
     default::Union{Nothing,Real} = nothing,
-)
+) where {T}
     if default !== nothing
-        default = Float64(default)
+        default = convert(T, default)
     end
-    moi_penalties = Dict{MOI.ConstraintIndex,Float64}(
-        index(k) => Float64(v) for (k, v) in penalties
+    moi_penalties = Dict{MOI.ConstraintIndex,T}(
+        index(k) => convert(T, v) for (k, v) in penalties
     )
     map = MOI.modify(
         backend(model),
@@ -1509,6 +1529,9 @@ function relax_with_penalty!(
     )
 end
 
-function relax_with_penalty!(model::Model; default::Real = 1.0)
+function relax_with_penalty!(
+    model::GenericModel{T};
+    default::Real = one(T),
+) where {T}
     return relax_with_penalty!(model, Dict(); default = default)
 end

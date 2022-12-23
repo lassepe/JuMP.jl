@@ -252,7 +252,7 @@ _desparsify(x::SparseArrays.AbstractSparseArray) = collect(x)
 _desparsify(x) = x
 
 function _functionize(v::V) where {V<:AbstractVariableRef}
-    return convert(GenericAffExpr{Float64,V}, v)
+    return convert(GenericAffExpr{value_type(V),V}, v)
 end
 
 _functionize(v::AbstractArray{<:AbstractVariableRef}) = _functionize.(v)
@@ -660,7 +660,10 @@ function build_constraint(
     return build_constraint(
         _error,
         func,
-        MOI.Interval(Float64(lb), Float64(ub)),
+        MOI.Interval(
+            convert(value_type(variable_ref_type(func)), lb),
+            convert(value_type(variable_ref_type(func)), ub),
+        ),
     )
 end
 
@@ -694,18 +697,21 @@ end
 
 function build_constraint(
     ::Function,
-    x::AbstractVector{<:AbstractJuMPScalar},
+    x::AbstractVector{T},
     set::MOI.SOS1,
-)
-    return VectorConstraint(x, MOI.SOS1{Float64}(set.weights))
+) where {T<:AbstractJuMPScalar}
+    return VectorConstraint(
+        x,
+        MOI.SOS1{value_type(variable_ref_type(T))}(set.weights),
+    )
 end
 
 function build_constraint(
     ::Function,
-    x::AbstractVector{<:AbstractJuMPScalar},
+    x::AbstractVector{T},
     set::MOI.SOS2,
-)
-    return VectorConstraint(x, MOI.SOS2{Float64}(set.weights))
+) where {T<:AbstractJuMPScalar}
+    return VectorConstraint(x, MOI.SOS2{value_type(T)}(set.weights))
 end
 
 # TODO: update 3-argument @constraint macro to pass through names like @variable

@@ -14,8 +14,8 @@ end
 
 _throw_write_to_file_explanatory_message(err) = rethrow(err)
 
-function _copy_to_bridged_model(f::Function, model::Model)
-    inner = MOI.instantiate(f; with_bridge_type = Float64)
+function _copy_to_bridged_model(f::Function, model::GenericModel{T}) where {T}
+    inner = MOI.instantiate(f; with_bridge_type = T)
     try
         MOI.copy_to(inner, model)
     catch err

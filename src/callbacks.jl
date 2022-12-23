@@ -76,15 +76,15 @@ function MOI.submit(model::Model, cb::MOI.UserCut, con::ScalarConstraint)
 end
 
 function MOI.submit(
-    model::Model,
+    model::GenericModel{T},
     cb::MOI.HeuristicSolution,
     variables::Vector{VariableRef},
     values::Vector{<:Real},
-)
+) where {T}
     return MOI.submit(
         backend(model),
         cb,
         index.(variables),
-        convert(Vector{Float64}, values),
+        convert(Vector{T}, values),
     )
 end
