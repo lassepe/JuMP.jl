@@ -205,7 +205,11 @@ function _distance_to_set(x::T, ::MOI.Integer, ::Type) where {T<:Real}
     return abs(x - round(x))
 end
 
-function _distance_to_set(x::T, set::MOI.Semicontinuous{T}, ::Type) where {T<:Real}
+function _distance_to_set(
+    x::T,
+    set::MOI.Semicontinuous{T},
+    ::Type,
+) where {T<:Real}
     return min(max(x - set.upper, set.lower - x, zero(T)), abs(x))
 end
 
@@ -225,17 +229,29 @@ function _check_dimension(v::AbstractVector, s)
     return
 end
 
-function _distance_to_set(x::Vector{T}, set::MOI.Nonnegatives, ::Type) where {T<:Real}
+function _distance_to_set(
+    x::Vector{T},
+    set::MOI.Nonnegatives,
+    ::Type,
+) where {T<:Real}
     _check_dimension(x, set)
     return LinearAlgebra.norm(max(-xi, zero(T)) for xi in x)
 end
 
-function _distance_to_set(x::Vector{T}, set::MOI.Nonpositives, ::Type) where {T<:Real}
+function _distance_to_set(
+    x::Vector{T},
+    set::MOI.Nonpositives,
+    ::Type,
+) where {T<:Real}
     _check_dimension(x, set)
     return LinearAlgebra.norm(max(xi, zero(T)) for xi in x)
 end
 
-function _distance_to_set(x::Vector{T}, set::MOI.Zeros, ::Type) where {T<:Number}
+function _distance_to_set(
+    x::Vector{T},
+    set::MOI.Zeros,
+    ::Type,
+) where {T<:Number}
     _check_dimension(x, set)
     return LinearAlgebra.norm(x)
 end

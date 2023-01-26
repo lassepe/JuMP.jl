@@ -692,7 +692,12 @@ function build_constraint(
     lb::Real,
     ub::Real,
 )
-    return build_constraint(_error, one(value_type(typeof(func))) * func, lb, ub)
+    return build_constraint(
+        _error,
+        one(value_type(typeof(func))) * func,
+        lb,
+        ub,
+    )
 end
 
 function build_constraint(

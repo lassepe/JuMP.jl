@@ -99,7 +99,7 @@ end
 Base.:+(lhs::AbstractJuMPScalar) = lhs
 function Base.:-(lhs::AbstractVariableRef)
     T = value_type(typeof(lhs))
-    _build_aff_expr(zero(T), -one(T), lhs)
+    return _build_aff_expr(zero(T), -one(T), lhs)
 end
 Base.:*(lhs::AbstractJuMPScalar) = lhs # make this more generic so extensions don't have to define unary multiplication for our macros
 # AbstractVariableRef--_Constant
