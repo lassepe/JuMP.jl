@@ -1094,7 +1094,12 @@ function set_start_value(
     variable::GenericVariableRef{T},
     value::Union{Nothing,Real},
 ) where {T}
-    MOI.set(owner_model(variable), MOI.VariablePrimalStart(), variable, _convert_if_something(T, value))
+    MOI.set(
+        owner_model(variable),
+        MOI.VariablePrimalStart(),
+        variable,
+        _convert_if_something(T, value),
+    )
     return
 end
 

@@ -668,7 +668,11 @@ function GenericAffExpr{C,VariableRef}(
 ) where {C,T}
     aff = GenericAffExpr{C,GenericVariableRef{T}}(f.constant)
     for t in f.terms
-        add_to_expression!(aff, t.coefficient, GenericVariableRef(m, t.variable))
+        add_to_expression!(
+            aff,
+            t.coefficient,
+            GenericVariableRef(m, t.variable),
+        )
     end
     return aff
 end
