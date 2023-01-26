@@ -663,21 +663,21 @@ function moi_function_type(::Type{<:GenericAffExpr{T}}) where {T}
 end
 
 function GenericAffExpr{C,VariableRef}(
-    m::GenericModel,
+    m::GenericModel{T},
     f::MOI.ScalarAffineFunction,
-) where {C}
-    aff = GenericAffExpr{C,VariableRef}(f.constant)
+) where {C,T}
+    aff = GenericAffExpr{C,GenericVariableRef{T}}(f.constant)
     for t in f.terms
-        add_to_expression!(aff, t.coefficient, VariableRef(m, t.variable))
+        add_to_expression!(aff, t.coefficient, GenericVariableRef(m, t.variable))
     end
     return aff
 end
 
 function jump_function_type(
-    ::GenericModel,
-    ::Type{MOI.ScalarAffineFunction{T}},
-) where {T}
-    return GenericAffExpr{T,VariableRef}
+    ::GenericModel{T},
+    ::Type{MOI.ScalarAffineFunction{C}},
+) where {C,T}
+    return GenericAffExpr{C,GenericVariableRef{T}}
 end
 
 function jump_function(
