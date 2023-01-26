@@ -183,7 +183,7 @@ function _show_work_counters_summary(io::IO, summary::_SolutionSummary)
 end
 
 function _get_solution_dict(model, result)
-    dict = Dict{String,value_type(model)}()
+    dict = Dict{String,value_type(typeof(model))}()
     for x in all_variables(model)
         variable_name = name(x)
         if !isempty(variable_name)
@@ -194,7 +194,7 @@ function _get_solution_dict(model, result)
 end
 
 function _get_constraint_dict(model, result)
-    dict = Dict{String,value_type(model)}()
+    dict = Dict{String,value_type(typeof(model))}()
     for (F, S) in list_of_constraint_types(model)
         for constraint in all_constraints(model, F, S)
             constraint_name = name(constraint)
