@@ -908,7 +908,10 @@ con : [x + y + 1, x + 2, y + 2] ∈ MathOptInterface.SecondOrderCone(3)
 ```
 
 """
-function add_to_function_constant(constraint::ConstraintRef{<:AbstractModel}, value)
+function add_to_function_constant(
+    constraint::ConstraintRef{<:AbstractModel},
+    value,
+)
     model = owner_model(constraint)
     # The type of `backend(model)` is not type-stable, so we use a function
     # barrier (`_moi_add_to_function_constant`) to improve performance.
