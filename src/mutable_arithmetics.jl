@@ -219,10 +219,10 @@ end
 
 function _MA.operate!(
     ::typeof(_MA.sub_mul),
-    expr::_GenericAffOrQuadExpr,
+    expr::_GenericAffOrQuadExpr{T},
     x::_Scalar,
-)
-    return add_to_expression!(expr, -1.0, x)
+) where {T}
+    return add_to_expression!(expr, -one(T), x)
 end
 
 function _MA.operate!(
