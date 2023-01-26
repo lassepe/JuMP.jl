@@ -706,7 +706,11 @@ function jump_function(
     for scalar_f in MOIU.eachscalar(f)
         g = GenericAffExpr{C,GenericVariableRef{T}}(scalar_f.constant)
         for t in scalar_f.terms
-            add_to_expression!(g, t.coefficient, GenericVariableRef(model, t.variable))
+            add_to_expression!(
+                g,
+                t.coefficient,
+                GenericVariableRef(model, t.variable),
+            )
         end
         push!(ret, g)
     end

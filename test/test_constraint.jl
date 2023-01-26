@@ -218,7 +218,8 @@ function test_extension_two_sided_constraints(
     _test_constraint_name_util(cref, "cref", AffExprType, MOI.Interval{T})
     c = constraint_object(cref)
     @test isequal_canonical(c.func, x + y)
-    @test c.set == MOI.Interval(zero(value_type(ModelType)), one(value_type(ModelType)))
+    @test c.set ==
+          MOI.Interval(zero(value_type(ModelType)), one(value_type(ModelType)))
     cref = @constraint(m, 2x - y + T(2) ∈ MOI.Interval(-one(T), one(T)))
     @test "" == @inferred name(cref)
     c = constraint_object(cref)
@@ -1441,7 +1442,8 @@ function test_extension_HermitianPSDCone_errors(
     ModelType = Model,
     VariableRefType = VariableRef,
 )
-    AffExprType = JuMP.GenericAffExpr{Complex{value_type(ModelType)},VariableRefType}
+    AffExprType =
+        JuMP.GenericAffExpr{Complex{value_type(ModelType)},VariableRefType}
     model = ModelType()
     @variable(model, x)
     @variable(model, y)

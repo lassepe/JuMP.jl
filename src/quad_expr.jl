@@ -611,7 +611,12 @@ function GenericQuadExpr{C,GenericVariableRef{T}}(
         if v1 == v2
             coef /= 2
         end
-        add_to_expression!(quad, coef, GenericVariableRef{T}(m, v1), GenericVariableRef{T}(m, v2))
+        add_to_expression!(
+            quad,
+            coef,
+            GenericVariableRef{T}(m, v1),
+            GenericVariableRef{T}(m, v2),
+        )
     end
     return quad
 end
@@ -638,7 +643,8 @@ function jump_function(
     f::MOI.VectorQuadraticFunction{C},
 ) where {C,T}
     return GenericQuadExpr{C,GenericVariableRef{T}}[
-        GenericQuadExpr{C,GenericVariableRef{T}}(model, f) for f in MOIU.eachscalar(f)
+        GenericQuadExpr{C,GenericVariableRef{T}}(model, f) for
+        f in MOIU.eachscalar(f)
     ]
 end
 

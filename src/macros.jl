@@ -736,15 +736,25 @@ function model_convert(model, α::Number)
 end
 
 function model_convert(model, con::BridgeableConstraint)
-    return BridgeableConstraint(model_convert(model, con.constraint), con.bridge_type)
+    return BridgeableConstraint(
+        model_convert(model, con.constraint),
+        con.bridge_type,
+    )
 end
 
 function model_convert(model, con::ScalarConstraint)
-    return ScalarConstraint(model_convert(model, con.func), model_convert(model, con.set))
+    return ScalarConstraint(
+        model_convert(model, con.func),
+        model_convert(model, con.set),
+    )
 end
 
 function model_convert(model, con::VectorConstraint)
-    return VectorConstraint(model_convert.(model, con.func), model_convert(model, con.set), con.shape)
+    return VectorConstraint(
+        model_convert.(model, con.func),
+        model_convert(model, con.set),
+        con.shape,
+    )
 end
 
 model_convert(model, con) = con
