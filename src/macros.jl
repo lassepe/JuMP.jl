@@ -711,7 +711,7 @@ function build_constraint(
     x::AbstractVector{T},
     set::MOI.SOS2,
 ) where {T<:AbstractJuMPScalar}
-    return VectorConstraint(x, MOI.SOS2{value_type(T)}(set.weights))
+    return VectorConstraint(x, MOI.SOS2{value_type(variable_ref_type(T))}(set.weights))
 end
 
 # TODO: update 3-argument @constraint macro to pass through names like @variable
