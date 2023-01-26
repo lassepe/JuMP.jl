@@ -52,12 +52,16 @@ mutable struct GenericQuadExpr{CoefType,VarType} <: AbstractJuMPScalar
 end
 
 """
-    variable_ref_type(::GenericQuadExpr{C, V}) where {C, V}
+    variable_ref_type(::Union{GenericQuadExpr{C,V},Type{GenericQuadExpr{C,V}}}) where {C,V}
 
 A helper function used internally by JuMP and some JuMP extensions. Returns the
 variable type `V` from a [`GenericQuadExpr`](@ref)
 """
-variable_ref_type(::GenericQuadExpr{C,V}) where {C,V} = V
+function variable_ref_type(
+    ::Union{GenericQuadExpr{C,V},Type{GenericQuadExpr{C,V}}},
+) where {C,V}
+    return V
+end
 
 """
     GenericQuadExpr(

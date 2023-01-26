@@ -123,12 +123,16 @@ mutable struct GenericAffExpr{CoefType,VarType} <: AbstractJuMPScalar
 end
 
 """
-    variable_ref_type(::GenericAffExpr{C, V}) where {C, V}
+    variable_ref_type(::Union{GenericAffExpr{C,V},Type{GenericAffExpr{C,V}}}) where {C,V}
 
 A helper function used internally by JuMP and some JuMP extensions. Returns the
 variable type `V` from a [`GenericAffExpr`](@ref)
 """
-variable_ref_type(::GenericAffExpr{C,V}) where {C,V} = V
+function variable_ref_type(
+    ::Union{GenericAffExpr{C,V},Type{GenericAffExpr{C,V}}},
+) where {C,V}
+    return V
+end
 
 """
     GenericAffExpr(constant::V, kv::AbstractArray{Pair{K,V}}) where {K,V}
