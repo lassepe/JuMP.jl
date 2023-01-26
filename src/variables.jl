@@ -1075,6 +1075,9 @@ See also [`set_start_value`](@ref).
 """
 has_start_value(v::AbstractVariableRef)::Bool = start_value(v) !== nothing
 
+_convert_if_something(::Type{T}, x) where {T} = convert(T, x)
+_convert_if_something(::Type, ::Nothing) = nothing
+
 """
     set_start_value(variable::GenericVariableRef, value::Union{Real,Nothing})
 
@@ -1089,13 +1092,10 @@ See also [`start_value`](@ref).
 """
 function set_start_value(
     variable::GenericVariableRef{T},
-    value::Union{Nothing,T},
+    value::Union{Nothing,Real},
 ) where {T}
-    MOI.set(owner_model(variable), MOI.VariablePrimalStart(), variable, value)
+    MOI.set(owner_model(variable), MOI.VariablePrimalStart(), variable, _convert_if_something(T, value))
     return
-end
-function set_start_value(x::GenericVariableRef{T}, v::Number) where {T}
-    return set_start_value(x, convert(T, v))
 end
 
 """

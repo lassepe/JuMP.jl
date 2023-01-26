@@ -978,11 +978,8 @@ function _constraint_primal(
     },
     result::Int,
     ::Type{T},
-) where {T}
-    return convert(
-        T,
-        MOI.get(con_ref.model, MOI.ConstraintPrimal(result), con_ref),
-    )
+)::T where {T}
+    return MOI.get(con_ref.model, MOI.ConstraintPrimal(result), con_ref)
 end
 function _constraint_primal(
     con_ref::ConstraintRef{
@@ -994,11 +991,8 @@ function _constraint_primal(
     },
     result,
     ::Type{T},
-) where {T}
-    return convert(
-        Vector{T},
-        MOI.get(con_ref.model, MOI.ConstraintPrimal(result), con_ref),
-    )
+)::Vector{T} where {T}
+    return MOI.get(con_ref.model, MOI.ConstraintPrimal(result), con_ref)
 end
 
 """
@@ -1044,11 +1038,8 @@ function _constraint_dual(
     },
     result::Int,
     ::Type{T},
-) where {T}
-    return convert(
-        T,
-        MOI.get(con_ref.model, MOI.ConstraintDual(result), con_ref),
-    )
+)::T where {T}
+    return MOI.get(con_ref.model, MOI.ConstraintDual(result), con_ref)
 end
 function _constraint_dual(
     con_ref::ConstraintRef{
@@ -1060,11 +1051,8 @@ function _constraint_dual(
     },
     result::Int,
     ::Type{T},
-) where {T}
-    return convert(
-        Vector{T},
-        MOI.get(con_ref.model, MOI.ConstraintDual(result), con_ref),
-    )
+)::Vector{T} where {T}
+    return MOI.get(con_ref.model, MOI.ConstraintDual(result), con_ref)
 end
 
 """
