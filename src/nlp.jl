@@ -157,7 +157,11 @@ programmatically, and you cannot use [`@NLobjective`](@ref).
 julia> set_nonlinear_objective(model, MIN_SENSE, :(\$(x) + \$(x)^2))
 ```
 """
-function set_nonlinear_objective(model::GenericModel, sense::MOI.OptimizationSense, x)
+function set_nonlinear_objective(
+    model::GenericModel,
+    sense::MOI.OptimizationSense,
+    x,
+)
     _init_NLP(model)
     set_objective_sense(model, sense)
     MOI.Nonlinear.set_objective(model.nlp_model, x)
@@ -381,7 +385,12 @@ const NonlinearConstraintIndex = MOI.Nonlinear.ConstraintIndex
 const NonlinearConstraintRef =
     ConstraintRef{Model,MOI.Nonlinear.ConstraintIndex}
 
-function _normalize_constraint_expr(::Type{T}, lhs::Real, body, rhs::Real) where {T}
+function _normalize_constraint_expr(
+    ::Type{T},
+    lhs::Real,
+    body,
+    rhs::Real,
+) where {T}
     return convert(T, lhs), body, convert(T, rhs)
 end
 
@@ -393,16 +402,24 @@ function _normalize_constraint_expr(::Type, lhs, body, rhs)
     )
 end
 
-_normalize_constraint_expr(::Type{T}, lhs, rhs::Real) where {T} = lhs, convert(T, rhs)
+function _normalize_constraint_expr(::Type{T}, lhs, rhs::Real) where {T}
+    return lhs, convert(T, rhs)
+end
 
-_normalize_constraint_expr(::Type{T}, lhs, rhs) where {T} = Expr(:call, :-, lhs, rhs), zero(T)
+function _normalize_constraint_expr(::Type{T}, lhs, rhs) where {T}
+    return Expr(:call, :-, lhs, rhs), zero(T)
+end
 
 function _expr_to_constraint(::Type{T}, expr::Expr) where {T}
     if isexpr(expr, :comparison)
         @assert expr.args[2] == expr.args[4]
         @assert expr.args[2] in (:<=, :>=)
-        lhs, body, rhs =
-            _normalize_constraint_expr(T, expr.args[1], expr.args[3], expr.args[5])
+        lhs, body, rhs = _normalize_constraint_expr(
+            T,
+            expr.args[1],
+            expr.args[3],
+            expr.args[5],
+        )
         return body, MOI.Interval(lhs, rhs)
     end
     lhs, rhs = _normalize_constraint_expr(T, expr.args[2], expr.args[3])
@@ -602,7 +619,10 @@ julia> nonlinear_dual_start_value(model)
   1.0
 ```
 """
-function set_nonlinear_dual_start_value(model::GenericModel{T}, start::Vector{T}) where {T}
+function set_nonlinear_dual_start_value(
+    model::GenericModel{T},
+    start::Vector{T},
+) where {T}
     _init_NLP(model)
     N = num_nonlinear_constraints(model)
     if length(start) != N

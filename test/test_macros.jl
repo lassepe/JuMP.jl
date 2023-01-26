@@ -29,7 +29,11 @@ function JuMP.build_variable(
     return NewVariable(info)
 end
 
-function JuMP.add_variable(model::GenericModel, v::NewVariable, name::String = "")
+function JuMP.add_variable(
+    model::GenericModel,
+    v::NewVariable,
+    name::String = "",
+)
     return JuMP.add_variable(
         model,
         ScalarVariable(v.info),
@@ -106,7 +110,11 @@ end
 
 const MyVariableTuple{S,T,U,V} = Tuple{JuMP.VariableInfo{S,T,U,V},Int,Int}
 
-function JuMP.add_variable(model::GenericModel, v::MyVariableTuple, name::String = "")
+function JuMP.add_variable(
+    model::GenericModel,
+    v::MyVariableTuple,
+    name::String = "",
+)
     model.ext[:names][v] = name
     return v
 end

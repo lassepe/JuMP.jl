@@ -67,7 +67,11 @@ function callback_value(cb_data, expr::Union{GenericAffExpr,GenericQuadExpr})
     end
 end
 
-function MOI.submit(model::GenericModel, cb::MOI.LazyConstraint, con::ScalarConstraint)
+function MOI.submit(
+    model::GenericModel,
+    cb::MOI.LazyConstraint,
+    con::ScalarConstraint,
+)
     return MOI.submit(backend(model), cb, moi_function(con.func), con.set)
 end
 

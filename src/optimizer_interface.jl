@@ -402,8 +402,7 @@ function set_optimizer(
 ) where {T}
     error_if_direct_mode(model, :set_optimizer)
     if add_bridges
-        optimizer =
-            MOI.instantiate(optimizer_constructor; with_bridge_type = T)
+        optimizer = MOI.instantiate(optimizer_constructor; with_bridge_type = T)
         for bridge_type in model.bridge_types
             _moi_add_bridge(optimizer, bridge_type, T)
         end
@@ -557,7 +556,10 @@ function raw_status(model::GenericModel)
     return MOI.get(model, MOI.RawStatusString())
 end
 
-function MOI.get(model::GenericModel, attr::Union{MOI.PrimalStatus,MOI.DualStatus})
+function MOI.get(
+    model::GenericModel,
+    attr::Union{MOI.PrimalStatus,MOI.DualStatus},
+)
     if model.is_model_dirty && mode(model) != DIRECT
         return MOI.NO_SOLUTION
     end

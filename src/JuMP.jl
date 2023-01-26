@@ -184,7 +184,10 @@ env = Gurobi.Env()
 model = Model(() -> Gurobi.Optimizer(env); add_bridges = false)
 ```
 """
-function GenericModel{T}((@nospecialize optimizer_factory); add_bridges::Bool = true) where {T}
+function GenericModel{T}(
+    (@nospecialize optimizer_factory);
+    add_bridges::Bool = true,
+) where {T}
     model = GenericModel{T}()
     set_optimizer(model, optimizer_factory; add_bridges = add_bridges)
     return model
@@ -399,7 +402,9 @@ function set_string_names_on_creation(model::GenericModel, value::Bool)
     return
 end
 
-set_string_names_on_creation(model::GenericModel) = model.set_string_names_on_creation
+function set_string_names_on_creation(model::GenericModel)
+    return model.set_string_names_on_creation
+end
 
 set_string_names_on_creation(::AbstractModel) = true
 

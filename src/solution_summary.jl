@@ -54,7 +54,11 @@ function foo(model)
 end
 ```
 """
-function solution_summary(model::GenericModel; result::Int = 1, verbose::Bool = false)
+function solution_summary(
+    model::GenericModel;
+    result::Int = 1,
+    verbose::Bool = false,
+)
     num_results = result_count(model)
     has_primal = has_values(model; result = result)
     has_dual = has_duals(model; result = result)

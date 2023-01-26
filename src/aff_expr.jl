@@ -674,7 +674,10 @@ function jump_function_type(
     return GenericAffExpr{T,VariableRef}
 end
 
-function jump_function(model::GenericModel, f::MOI.ScalarAffineFunction{T}) where {T}
+function jump_function(
+    model::GenericModel,
+    f::MOI.ScalarAffineFunction{T},
+) where {T}
     return GenericAffExpr{T,VariableRef}(model, f)
 end
 
@@ -685,7 +688,10 @@ function jump_function_type(
     return Vector{GenericAffExpr{T,VariableRef}}
 end
 
-function jump_function(model::GenericModel, f::MOI.VectorAffineFunction{T}) where {T}
+function jump_function(
+    model::GenericModel,
+    f::MOI.VectorAffineFunction{T},
+) where {T}
     ret = GenericAffExpr{T,VariableRef}[]
     for scalar_f in MOIU.eachscalar(f)
         g = GenericAffExpr{T,VariableRef}(scalar_f.constant)

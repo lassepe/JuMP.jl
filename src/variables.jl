@@ -8,7 +8,8 @@
 
 Returns number of variables in `model`.
 """
-num_variables(model::GenericModel)::Int64 = MOI.get(model, MOI.NumberOfVariables())
+num_variables(model::GenericModel)::Int64 =
+    MOI.get(model, MOI.NumberOfVariables())
 
 """
     AbstractVariable
@@ -1143,7 +1144,12 @@ function add_variable(model::GenericModel, v::ScalarVariable, name::String = "")
     return _moi_add_variable(backend(model), model, v, name)
 end
 
-function _moi_add_variable(moi_backend, model::GenericModel{T}, v::ScalarVariable, name::String) where {T}
+function _moi_add_variable(
+    moi_backend,
+    model::GenericModel{T},
+    v::ScalarVariable,
+    name::String,
+) where {T}
     index = MOI.add_variable(moi_backend)
     var_ref = VariableRef(model, index)
     _moi_constrain_variable(moi_backend, index, v.info, T)
@@ -1154,7 +1160,12 @@ function _moi_add_variable(moi_backend, model::GenericModel{T}, v::ScalarVariabl
     return var_ref
 end
 
-function _moi_constrain_variable(moi_backend::MOI.ModelLike, index, info, ::Type{T}) where {T}
+function _moi_constrain_variable(
+    moi_backend::MOI.ModelLike,
+    index,
+    info,
+    ::Type{T},
+) where {T}
     # We don't call the _moi* versions (e.g., _moi_set_lower_bound) because they
     # have extra checks that are not necessary for newly created variables.
     if info.has_lb
@@ -1452,7 +1463,11 @@ _is_binary(v::ScalarVariable) = v.info.binary
 
 _is_integer(v::ScalarVariable) = v.info.integer
 
-function add_variable(model::GenericModel, v::ComplexVariable, name::String = "")
+function add_variable(
+    model::GenericModel,
+    v::ComplexVariable,
+    name::String = "",
+)
     model.is_model_dirty = true
     var = ScalarVariable(v.info)
     real_part = add_variable(model, _real(var), _real(name))

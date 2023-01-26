@@ -57,7 +57,10 @@ Note: interval constraints are NOT supported.
         "by \$dRHS_hi."
     )
 """
-function lp_sensitivity_report(model::GenericModel{T}; atol::T = Base.rtoldefault(T)) where {T}
+function lp_sensitivity_report(
+    model::GenericModel{T};
+    atol::T = Base.rtoldefault(T),
+) where {T}
     if !_is_lp(model)
         error(
             "Unable to compute LP sensitivity because model is not a linear " *

@@ -53,7 +53,10 @@ not support this attribute.
 
 See also: [`result_count`](@ref).
 """
-function dual_objective_value(model::GenericModel{T}; result::Int = 1)::T where {T}
+function dual_objective_value(
+    model::GenericModel{T};
+    result::Int = 1,
+)::T where {T}
     return MOI.get(model, MOI.DualObjectiveValue(result))
 end
 
@@ -90,7 +93,10 @@ functions; the recommended way to set the objective is with the
 """
 function set_objective_function end
 
-function set_objective_function(model::GenericModel, func::MOI.AbstractScalarFunction)
+function set_objective_function(
+    model::GenericModel,
+    func::MOI.AbstractScalarFunction,
+)
     attr = MOI.ObjectiveFunction{typeof(func)}()
     if !MOI.supports(backend(model), attr)
         error(
@@ -116,10 +122,7 @@ end
 function set_objective_function(model::GenericModel{T}, func::Real) where {T}
     return set_objective_function(
         model,
-        MOI.ScalarAffineFunction(
-            MOI.ScalarAffineTerm{T}[],
-            convert(T, func),
-        ),
+        MOI.ScalarAffineFunction(MOI.ScalarAffineTerm{T}[], convert(T, func)),
     )
 end
 
