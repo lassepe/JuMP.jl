@@ -399,8 +399,8 @@ typically much more efficient than `expression += (*)(terms...)`. For example,
 
 Only a few methods are defined, mostly for internal use, and only for the cases
 when (1) they can be implemented efficiently and (2) `expression` is capable of
-storing the result. For example, `add_to_expression!(::AffExpr, ::VariableRef,
-::VariableRef)` is not defined because a `GenericAffExpr` cannot store the
+storing the result. For example, `add_to_expression!(::AffExpr, ::GenericVariableRef,
+::GenericVariableRef)` is not defined because a `GenericAffExpr` cannot store the
 product of two variables.
 """
 function add_to_expression! end
@@ -610,7 +610,7 @@ end
 # Note: No validation is performed that the variables in the AffExpr belong to
 # the same model. The verification is done in `check_belongs_to_model` which
 # should be called before calling `MOI.ScalarAffineFunction`.
-function MOI.ScalarAffineFunction(a::GenericAffExpr{C,VariableRef}) where {C}
+function MOI.ScalarAffineFunction(a::GenericAffExpr{C,<:GenericVariableRef}) where {C}
     _assert_isfinite(a)
     terms = MOI.ScalarAffineTerm{C}[
         MOI.ScalarAffineTerm(t[1], index(t[2])) for t in linear_terms(a)

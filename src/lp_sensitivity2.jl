@@ -14,7 +14,7 @@ struct SensitivityReport{T}
 end
 
 Base.getindex(s::SensitivityReport, c::ConstraintRef) = s.rhs[c]
-Base.getindex(s::SensitivityReport, x::VariableRef) = s.objective[x]
+Base.getindex(s::SensitivityReport, x::GenericVariableRef) = s.objective[x]
 
 """
     lp_sensitivity_report(model::GenericModel{T}; atol::T = Base.rtoldefault(T))::SensitivityReport{T} where {T}

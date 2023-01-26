@@ -55,14 +55,14 @@ end
 ```
 """
 function solution_summary(
-    model::GenericModel;
+    model::GenericModel{T};
     result::Int = 1,
     verbose::Bool = false,
-)
+) where {T}
     num_results = result_count(model)
     has_primal = has_values(model; result = result)
     has_dual = has_duals(model; result = result)
-    return _SolutionSummary(
+    return _SolutionSummary{T}(
         result,
         verbose,
         solver_name(model),
@@ -215,8 +215,8 @@ function _try_get(f, model)
 end
 
 _print_if_not_missing(io, header, ::Missing) = nothing
-_print_if_not_missing(io, header, value::Int) = println(io, header, value)
-function _print_if_not_missing(io, header, value::Real)
+_print_if_not_missing(io, header, value::Real) = println(io, header, value)
+function _print_if_not_missing(io, header, value::AbstractFloat)
     println(io, header, Printf.@sprintf("%.5e", value))
     return
 end

@@ -1152,7 +1152,7 @@ function _moi_add_variable(
     name::String,
 ) where {T}
     index = MOI.add_variable(moi_backend)
-    var_ref = VariableRef(model, index)
+    var_ref = GenericVariableRef(model, index)
     _moi_constrain_variable(moi_backend, index, v.info, T)
     if !isempty(name) &&
        MOI.supports(moi_backend, MOI.VariableName(), MOI.VariableIndex)
@@ -1687,8 +1687,8 @@ function relax_integrality(model::GenericModel{T}) where {T}
         elseif info.binary
             unset_binary(v)
             if !info.has_fix
-                set_lower_bound(v, max(0.0, info.lower_bound))
-                set_upper_bound(v, min(1.0, info.upper_bound))
+                set_lower_bound(v, max(zero(T), info.lower_bound))
+                set_upper_bound(v, min(one(T), info.upper_bound))
             elseif info.fixed_value < 0 || info.fixed_value > 1
                 error(
                     "The model has no valid relaxation: binary variable " *

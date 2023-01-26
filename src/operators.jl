@@ -97,16 +97,23 @@ end
 # AbstractVariableRef (or, AbstractJuMPScalar)
 # TODO: What is the role of AbstractJuMPScalar??
 Base.:+(lhs::AbstractJuMPScalar) = lhs
-Base.:-(lhs::AbstractVariableRef) = _build_aff_expr(0.0, -1.0, lhs)
+function Base.:-(lhs::AbstractVariableRef)
+    T = value_type(typeof(lhs))
+    _build_aff_expr(zero(T), -one(T), lhs)
+end
 Base.:*(lhs::AbstractJuMPScalar) = lhs # make this more generic so extensions don't have to define unary multiplication for our macros
 # AbstractVariableRef--_Constant
 Base.:+(lhs::AbstractVariableRef, rhs::_Constant) = (+)(rhs, lhs)
 Base.:-(lhs::AbstractVariableRef, rhs::_Constant) = (+)(-rhs, lhs)
 Base.:*(lhs::AbstractVariableRef, rhs::_Constant) = (*)(rhs, lhs)
-Base.:/(lhs::AbstractVariableRef, rhs::_Constant) = (*)(1.0 / rhs, lhs)
+function Base.:/(lhs::AbstractVariableRef, rhs::_Constant)
+    T = value_type(typeof(lhs))
+    return (*)(one(T) / rhs, lhs)
+end
 # AbstractVariableRef--AbstractVariableRef
 function Base.:+(lhs::V, rhs::V) where {V<:AbstractVariableRef}
-    return _build_aff_expr(0.0, 1.0, lhs, 1.0, rhs)
+    T = value_type(V)
+    return _build_aff_expr(zero(T), one(T), lhs, one(T), rhs)
 end
 function Base.:-(lhs::V, rhs::V) where {V<:AbstractVariableRef}
     T = value_type(V)
@@ -469,7 +476,7 @@ end
 
 Base.transpose(x::AbstractJuMPScalar) = x
 
-Base.conj(x::VariableRef) = x
+Base.conj(x::GenericVariableRef) = x
 # Can remove the following code once == overloading is removed
 
 function LinearAlgebra.issymmetric(x::Matrix{T}) where {T<:_JuMPTypes}

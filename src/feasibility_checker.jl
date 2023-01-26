@@ -17,7 +17,7 @@ end
     primal_feasibility_report(
         model::GenericModel{T},
         point::AbstractDict{VariableRef,T} = _last_primal_solution(model),
-        atol::T = 0.0,
+        atol::T = zero(T),
         skip_missing::Bool = false,
     )::Dict{Any,T}
 
@@ -75,7 +75,7 @@ end
     primal_feasibility_report(
         point::Function,
         model::GenericModel{t};
-        atol::T = 0.0,
+        atol::T = zero(T),
         skip_missing::Bool = false,
     ) where {T}
 
@@ -140,7 +140,7 @@ function _add_infeasible_constraints(
 ) where {T,F,S}
     for con in all_constraints(model, F, S)
         obj = constraint_object(con)
-        d = _distance_to_set(value.(point_f, obj.func), obj.set)
+        d = _distance_to_set(value.(point_f, obj.func), obj.set, T)
         if d > atol
             violated_constraints[con] = d
         end
@@ -159,7 +159,7 @@ function _add_infeasible_nonlinear_constraints(
     g = zeros(num_nonlinear_constraints(model))
     MOI.eval_constraint(evaluator, g, point_f.(all_variables(model)))
     for (i, (index, constraint)) in enumerate(evaluator.model.constraints)
-        d = _distance_to_set(g[i], constraint.set)
+        d = _distance_to_set(g[i], constraint.set, T)
         if d > atol
             cref = ConstraintRef(model, index, ScalarShape())
             violated_constraints[cref] = d
@@ -168,48 +168,48 @@ function _add_infeasible_nonlinear_constraints(
     return
 end
 
-function _distance_to_set(::Any, set::MOI.AbstractSet)
+function _distance_to_set(::Any, set::MOI.AbstractSet, ::Type)
     return error(
         "Feasibility checker for set type $(typeof(set)) has not been " *
         "implemented yet.",
     )
 end
 
-_distance_to_set(::Missing, ::MOI.AbstractSet) = 0.0
+_distance_to_set(::Missing, ::MOI.AbstractSet, ::Type{T}) where {T} = zero(T)
 
 ###
 ### MOI.AbstractScalarSets
 ###
 
-function _distance_to_set(x::T, set::MOI.LessThan{T}) where {T<:Real}
+function _distance_to_set(x::T, set::MOI.LessThan{T}, ::Type) where {T<:Real}
     return max(x - set.upper, zero(T))
 end
 
-function _distance_to_set(x::T, set::MOI.GreaterThan{T}) where {T<:Real}
+function _distance_to_set(x::T, set::MOI.GreaterThan{T}, ::Type) where {T<:Real}
     return max(set.lower - x, zero(T))
 end
 
-function _distance_to_set(x::T, set::MOI.EqualTo{T}) where {T<:Number}
+function _distance_to_set(x::T, set::MOI.EqualTo{T}, ::Type) where {T<:Number}
     return abs(set.value - x)
 end
 
-function _distance_to_set(x::T, set::MOI.Interval{T}) where {T<:Real}
+function _distance_to_set(x::T, set::MOI.Interval{T}, ::Type) where {T<:Real}
     return max(x - set.upper, set.lower - x, zero(T))
 end
 
-function _distance_to_set(x::T, ::MOI.ZeroOne) where {T<:Real}
+function _distance_to_set(x::T, ::MOI.ZeroOne, ::Type) where {T<:Real}
     return min(abs(x - zero(T)), abs(x - one(T)))
 end
 
-function _distance_to_set(x::T, ::MOI.Integer) where {T<:Real}
+function _distance_to_set(x::T, ::MOI.Integer, ::Type) where {T<:Real}
     return abs(x - round(x))
 end
 
-function _distance_to_set(x::T, set::MOI.Semicontinuous{T}) where {T<:Real}
+function _distance_to_set(x::T, set::MOI.Semicontinuous{T}, ::Type) where {T<:Real}
     return min(max(x - set.upper, set.lower - x, zero(T)), abs(x))
 end
 
-function _distance_to_set(x::T, set::MOI.Semiinteger{T}) where {T<:Real}
+function _distance_to_set(x::T, set::MOI.Semiinteger{T}, ::Type) where {T<:Real}
     d = max(ceil(set.lower) - x, x - floor(set.upper), abs(x - round(x)))
     return min(d, abs(x))
 end
@@ -225,22 +225,22 @@ function _check_dimension(v::AbstractVector, s)
     return
 end
 
-function _distance_to_set(x::Vector{T}, set::MOI.Nonnegatives) where {T<:Real}
+function _distance_to_set(x::Vector{T}, set::MOI.Nonnegatives, ::Type) where {T<:Real}
     _check_dimension(x, set)
     return LinearAlgebra.norm(max(-xi, zero(T)) for xi in x)
 end
 
-function _distance_to_set(x::Vector{T}, set::MOI.Nonpositives) where {T<:Real}
+function _distance_to_set(x::Vector{T}, set::MOI.Nonpositives, ::Type) where {T<:Real}
     _check_dimension(x, set)
     return LinearAlgebra.norm(max(xi, zero(T)) for xi in x)
 end
 
-function _distance_to_set(x::Vector{T}, set::MOI.Zeros) where {T<:Number}
+function _distance_to_set(x::Vector{T}, set::MOI.Zeros, ::Type) where {T<:Number}
     _check_dimension(x, set)
     return LinearAlgebra.norm(x)
 end
 
-function _distance_to_set(x::Vector{T}, set::MOI.Reals) where {T<:Real}
+function _distance_to_set(x::Vector{T}, set::MOI.Reals, ::Type) where {T<:Real}
     _check_dimension(x, set)
     return zero(T)
 end

@@ -157,7 +157,7 @@ function GenericModel{T}() where {T}
         MOIU.UniversalFallback(MOIU.Model{T}()),
         MOIU.AUTOMATIC,
     )
-    return direct_model(caching_opt)
+    return direct_model(caching_opt, T)
 end
 
 const Model = GenericModel{Float64}
@@ -194,7 +194,7 @@ function GenericModel{T}(
 end
 
 """
-    direct_model(backend::MOI.ModelLike)
+    direct_model(backend::MOI.ModelLike, T::Type = Float64)
 
 Return a new JuMP model using [`backend`](@ref) to store the model and solve it.
 

@@ -485,9 +485,9 @@ end
 
 anonymous_name(::Any, x::AbstractVariableRef) = "anon"
 
-anonymous_name(::MIME"text/plain", x::VariableRef) = "_[$(index(x).value)]"
+anonymous_name(::MIME"text/plain", x::GenericVariableRef) = "_[$(index(x).value)]"
 
-function anonymous_name(::MIME"text/latex", x::VariableRef)
+function anonymous_name(::MIME"text/latex", x::GenericVariableRef)
     return "{\\_}_{$(index(x).value)}"
 end
 

@@ -40,7 +40,7 @@ struct ReferenceMap
     index_map::MOIU.IndexMap
 end
 
-function Base.getindex(map::ReferenceMap, vref::VariableRef)
+function Base.getindex(map::ReferenceMap, vref::GenericVariableRef)
     return VariableRef(map.model, map.index_map[index(vref)])
 end
 

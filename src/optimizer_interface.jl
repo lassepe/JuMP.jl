@@ -705,7 +705,7 @@ end
 function MOI.get(
     model::GenericModel,
     attr::MOI.AbstractVariableAttribute,
-    v::VariableRef,
+    v::GenericVariableRef,
 )
     check_belongs_to_model(v, model)
     if !MOI.is_set_by_optimize(attr)
@@ -755,7 +755,7 @@ end
 function MOI.set(
     model::GenericModel,
     attr::MOI.AbstractVariableAttribute,
-    v::VariableRef,
+    v::GenericVariableRef,
     value,
 )
     check_belongs_to_model(v, model)
@@ -807,7 +807,7 @@ function _moi_optimizer_index(
 end
 
 """
-    optimizer_index(x::VariableRef)::MOI.VariableIndex
+    optimizer_index(x::GenericVariableRef)::MOI.VariableIndex
     optimizer_index(x::ConstraintRef{Model})::MOI.ConstraintIndex
 
 Return the index that corresponds to `x` in the optimizer model.

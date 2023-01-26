@@ -542,7 +542,7 @@ end
 function build_constraint(
     _error::Function,
     func,
-    set::Union{MOI.AbstractScalarSet,MOI.AbstractVectorSet},
+    ::Union{MOI.AbstractScalarSet,MOI.AbstractVectorSet},
 )
     return _error(
         "Unable to add the constraint because we don't recognize " *
@@ -551,14 +551,14 @@ function build_constraint(
 end
 
 function build_constraint(
-    _error::Function,
+    ::Function,
     v::AbstractJuMPScalar,
     set::MOI.AbstractScalarSet,
 )
     return ScalarConstraint(v, set)
 end
 function build_constraint(
-    _error::Function,
+    ::Function,
     expr::Union{GenericAffExpr,GenericQuadExpr},
     set::MOI.AbstractScalarSet,
 )
@@ -692,7 +692,7 @@ function build_constraint(
     lb::Real,
     ub::Real,
 )
-    return build_constraint(_error, 1.0func, lb, ub)
+    return build_constraint(_error, one(value_type(typeof(func))) * func, lb, ub)
 end
 
 function build_constraint(
@@ -1678,8 +1678,8 @@ Update `infoexr` for a variable expression in the `@variable` macro of the form 
 function parse_one_operator_variable end
 
 function parse_one_operator_variable(
-    _error::Function,
-    infoexpr::_VariableInfoExpr,
+    ::Function,
+    ::_VariableInfoExpr,
     ::Union{Val{:in},Val{:∈}},
     set,
 )

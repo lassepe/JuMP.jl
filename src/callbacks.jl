@@ -28,14 +28,14 @@ function callback_node_status(cb_data, model::GenericModel)
 end
 
 """
-    callback_value(cb_data, x::VariableRef)
+    callback_value(cb_data, x::GenericVariableRef)
 
 Return the primal solution of a variable inside a callback.
 
 `cb_data` is the argument to the callback function, and the type is dependent on
 the solver.
 """
-function callback_value(cb_data, x::VariableRef)
+function callback_value(cb_data, x::GenericVariableRef)
     # TODO(odow):
     # MOI defines `is_set_by_optimize(::CallbackVariablePrimal) = true`.
     # This causes problems for JuMP because it checks the termination_status to

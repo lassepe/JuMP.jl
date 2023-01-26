@@ -51,7 +51,7 @@ end
 function MOI.Nonlinear.parse_expression(
     model::MOI.Nonlinear.Model,
     expr::MOI.Nonlinear.Expression,
-    x::VariableRef,
+    x::GenericVariableRef,
     parent::Int,
 )
     MOI.Nonlinear.parse_expression(model, expr, index(x), parent)
@@ -61,16 +61,16 @@ end
 function MOI.Nonlinear.parse_expression(
     model::MOI.Nonlinear.Model,
     expr::MOI.Nonlinear.Expression,
-    x::GenericAffExpr,
+    x::GenericAffExpr{T},
     parent::Int,
-)
+) where {T}
     sum_id = model.operators.multivariate_operator_to_id[:+]
     prod_id = model.operators.multivariate_operator_to_id[:*]
     call_multi = MOI.Nonlinear.NODE_CALL_MULTIVARIATE
     n_terms = length(x.terms) + !iszero(x.constant)
     if n_terms == 0
         # If `x` is empty, then substitute `0.0` as the expression.
-        MOI.Nonlinear.parse_expression(model, expr, 0.0, parent)
+        MOI.Nonlinear.parse_expression(model, expr, zero(T), parent)
         return
     elseif n_terms == 1
         # If `x` contains 1 term, then we don't need the leading `+` operator.
@@ -97,16 +97,16 @@ end
 function MOI.Nonlinear.parse_expression(
     model::MOI.Nonlinear.Model,
     expr::MOI.Nonlinear.Expression,
-    x::QuadExpr,
+    x::GenericQuadExpr{T},
     parent::Int,
-)
+) where {T}
     sum_id = model.operators.multivariate_operator_to_id[:+]
     prod_id = model.operators.multivariate_operator_to_id[:*]
     call_multi = MOI.Nonlinear.NODE_CALL_MULTIVARIATE
     n_terms = length(x.terms) + !iszero(x.aff)
     if n_terms == 0
         # If `x` is empty, then substitute `0.0` as the expression.
-        MOI.Nonlinear.parse_expression(model, expr, 0.0, parent)
+        MOI.Nonlinear.parse_expression(model, expr, zero(T), parent)
         return
     elseif n_terms == 1
         # If `x` contains 1 term, then we don't need the leading `+` operator.

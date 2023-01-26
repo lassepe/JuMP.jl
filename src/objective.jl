@@ -222,7 +222,7 @@ function objective_function(
 end
 
 """
-    set_objective_coefficient(model::GenericModel, variable::VariableRef, coefficient::Real)
+    set_objective_coefficient(model::GenericModel, variable::GenericVariableRef, coefficient::Real)
 
 Set the linear objective coefficient associated with `Variable` to `coefficient`.
 
@@ -230,7 +230,7 @@ Note: this function will throw an error if a nonlinear objective is set.
 """
 function set_objective_coefficient(
     model::GenericModel{T},
-    variable::VariableRef,
+    variable::GenericVariableRef,
     coeff::Real,
 ) where {T}
     if _nlp_objective_function(model) !== nothing

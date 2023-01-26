@@ -689,7 +689,7 @@ function add_constraint(
 end
 
 """
-    set_normalized_coefficient(con_ref::ConstraintRef, variable::VariableRef, value)
+    set_normalized_coefficient(con_ref::ConstraintRef, variable::GenericVariableRef, value)
 
 Set the coefficient of `variable` in the constraint `constraint` to `value`.
 
@@ -770,7 +770,7 @@ function set_normalized_coefficients(
 end
 
 """
-    normalized_coefficient(con_ref::ConstraintRef, variable::VariableRef)
+    normalized_coefficient(con_ref::ConstraintRef, variable::GenericVariableRef)
 
 Return the coefficient associated with `variable` in `constraint` after JuMP has
 normalized the constraint into its standard form. See also
@@ -928,7 +928,7 @@ Return the primal value of constraint `con_ref` associated with result index
 
 That is, if `con_ref` is the reference of a constraint `func`-in-`set`, it
 returns the value of `func` evaluated at the value of the variables (given by
-[`value(::VariableRef)`](@ref)).
+[`value(::GenericVariableRef)`](@ref)).
 
 Use [`has_values`](@ref) to check if a result exists before asking for values.
 
