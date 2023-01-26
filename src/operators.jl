@@ -15,7 +15,7 @@ function _complex_convert_type(
     ::Type{T},
     ::Type{<:LinearAlgebra.UniformScaling{S}},
 ) where {T,S}
-    return _complex_convert(T, S)
+    return _complex_convert_type(T, S)
 end
 _complex_convert_type(::Type{T}, ::Type{<:Complex}) where {T} = Complex{T}
 
