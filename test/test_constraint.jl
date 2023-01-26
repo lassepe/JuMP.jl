@@ -549,7 +549,7 @@ function test_extension_SDP_errors(
         "In `@constraint(model, [x 1; 1 -y] >= [1 x; x -2], PSDCone(), unknown_kw = 1)`:" *
         " Unrecognized constraint building format. Tried to invoke " *
         "`build_constraint(error, $(aff_str)[x - " *
-        "1 -x + 1; -x + 1 -y + 2], $(MOI.GreaterThan(0.0)), $(PSDCone()); unknown_kw = 1)`, but no " *
+        "1 -x + 1; -x + 1 -y + 2], $(MOI.GreaterThan(false)), $(PSDCone()); unknown_kw = 1)`, but no " *
         "such method exists. This is due to specifying an unrecognized " *
         "function, constraint set, and/or extra positional/keyword " *
         "arguments.\n\nIf you're trying to create a JuMP extension, you " *

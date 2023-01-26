@@ -195,13 +195,13 @@ moved to the set with `MOIU.shift_constant`.
 """
 function operator_to_set end
 
-operator_to_set(::Function, ::Union{Val{:(<=)},Val{:(≤)}}) = MOI.LessThan(0.0)
+operator_to_set(::Function, ::Union{Val{:(<=)},Val{:(≤)}}) = MOI.LessThan(false)
 
 function operator_to_set(::Function, ::Union{Val{:(>=)},Val{:(≥)}})
-    return MOI.GreaterThan(0.0)
+    return MOI.GreaterThan(false)
 end
 
-operator_to_set(::Function, ::Val{:(==)}) = MOI.EqualTo(0.0)
+operator_to_set(::Function, ::Val{:(==)}) = MOI.EqualTo(false)
 
 function operator_to_set(_error::Function, ::Val{S}) where {S}
     return _error("Unrecognized sense $S")
@@ -264,7 +264,7 @@ function _functionize(
 end
 
 _functionize(x) = x
-_functionize(::MutableArithmetics.Zero) = 0.0
+_functionize(::MutableArithmetics.Zero) = false
 
 """
     parse_constraint(_error::Function, expr::Expr)
@@ -1236,7 +1236,7 @@ end
 
 Replaces `_MA.Zero` with a floating point `0.0`.
 """
-_replace_zero(::_MA.Zero) = 0.0
+_replace_zero(::_MA.Zero) = false
 _replace_zero(x) = x
 
 """
