@@ -357,6 +357,8 @@ function test_extension_check_constraint_basics(
     ModelType = Model,
     VariableRefType = VariableRef,
 )
+    T = value_type(ModelType)
+    AffExprType = GenericAffExpr{T,VariableRefType}
     m = ModelType()
     @variable(m, w)
     @variable(m, x)
@@ -385,17 +387,17 @@ function test_extension_check_constraint_basics(
     @test c.set == MOI.Interval(-2.0, 0.0)
     cref = @constraint(m, -1 <= x <= 1)
     c = JuMP.constraint_object(cref)
-    @test c.func isa JuMP.GenericAffExpr
+    @test c.func isa AffExprType
     @test JuMP.isequal_canonical(c.func, 1x)
     @test c.set == MOI.Interval(-1.0, 1.0)
     cref = @constraint(m, -1 <= x <= sum(0.5 for i in 1:2))
     c = JuMP.constraint_object(cref)
-    @test c.func isa JuMP.GenericAffExpr
+    @test c.func isa AffExprType
     @test JuMP.isequal_canonical(c.func, 1x)
     @test c.set == MOI.Interval(-1.0, 1.0)
     cref = @constraint(m, 1 >= x >= 0)
     c = JuMP.constraint_object(cref)
-    @test c.func isa JuMP.GenericAffExpr
+    @test c.func isa AffExprType
     @test JuMP.isequal_canonical(c.func, 1x)
     @test c.set == MOI.Interval(0.0, 1.0)
     @test_throws ErrorException @constraint(m, x <= t <= y)
@@ -411,7 +413,7 @@ function test_extension_check_constraint_basics(
     )
     cref = @constraint(m, 3 + 5 * 7 <= 0)
     c = JuMP.constraint_object(cref)
-    @test JuMP.isequal_canonical(c.func, zero(AffExpr))
+    @test JuMP.isequal_canonical(c.func, zero(AffExprType))
     @test c.set == MOI.LessThan(-38.0)
     return
 end

@@ -219,6 +219,7 @@ end
 const VariableRef = GenericVariableRef{Float64}
 
 value_type(::Type{GenericVariableRef{T}}) where {T} = T
+variable_ref_type(::Union{GenericModel{T},Type{GenericModel{T}}}) where {T} = GenericVariableRef{T}
 
 # `AbstractVariableRef` types must override the default `owner_model` if the field
 #  name is not `model`.
@@ -347,7 +348,7 @@ function delete(model::GenericModel, variable_ref::GenericVariableRef)
 end
 
 """
-    delete(model::GenericModel, variable_refs::Vector{VariableRef})
+    delete(model::GenericModel, variable_refs::Vector{<:GenericVariableRef})
 
 Delete the variables associated with `variable_refs` from the model `model`.
 Solvers may implement methods for deleting multiple variables that are
@@ -530,7 +531,7 @@ moi_function(variable::AbstractVariableRef) = index(variable)
 moi_function_type(::Type{<:AbstractVariableRef}) = MOI.VariableIndex
 
 # Note: No validation is performed that the variables belong to the same model.
-function MOI.VectorOfVariables(vars::Vector{VariableRef})
+function MOI.VectorOfVariables(vars::Vector{<:GenericVariableRef})
     return MOI.VectorOfVariables(index.(vars))
 end
 function moi_function(variables::Vector{<:AbstractVariableRef})
@@ -539,16 +540,16 @@ end
 function moi_function_type(::Type{<:Vector{<:AbstractVariableRef}})
     return MOI.VectorOfVariables
 end
-function jump_function_type(::GenericModel, ::Type{MOI.VectorOfVariables})
-    return Vector{VariableRef}
+function jump_function_type(::GenericModel{T}, ::Type{MOI.VectorOfVariables}) where {T}
+    return Vector{GenericVariableRef{T}}
 end
-function jump_function(model::GenericModel, variables::MOI.VectorOfVariables)
-    return VariableRef[VariableRef(model, v) for v in variables.variables]
+function jump_function(model::GenericModel{T}, variables::MOI.VectorOfVariables) where {T}
+    return GenericVariableRef{T}[GenericVariableRef{T}(model, v) for v in variables.variables]
 end
 
-jump_function_type(::GenericModel, ::Type{MOI.VariableIndex}) = VariableRef
-function jump_function(model::GenericModel, variable::MOI.VariableIndex)
-    return VariableRef(model, variable)
+jump_function_type(::GenericModel{T}, ::Type{MOI.VariableIndex}) where {T} = GenericVariableRef{T}
+function jump_function(model::GenericModel{T}, variable::MOI.VariableIndex) where {T}
+    return GenericVariableRef{T}(model, variable)
 end
 
 ## Bound setter/getters

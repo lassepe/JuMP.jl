@@ -82,7 +82,7 @@ end
 function MOI.submit(
     model::GenericModel{T},
     cb::MOI.HeuristicSolution,
-    variables::Vector{VariableRef},
+    variables::Vector{GenericVariableRef{T}},
     values::Vector{<:Real},
 ) where {T}
     return MOI.submit(

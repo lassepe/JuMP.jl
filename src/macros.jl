@@ -552,19 +552,26 @@ end
 
 function build_constraint(
     ::Function,
-    v::AbstractJuMPScalar,
+    v::Union{AbstractJuMPScalar},
     set::MOI.AbstractScalarSet,
 )
     return ScalarConstraint(v, set)
 end
+function _clear_constant!(expr::Union{GenericAffExpr,GenericQuadExpr})
+    offset = constant(expr)
+    add_to_expression!(expr, -offset)
+    return expr, offset
+end
+function _clear_constant!(α::Number)
+    return zero(α), α
+end
 function build_constraint(
     ::Function,
-    expr::Union{GenericAffExpr,GenericQuadExpr},
+    expr::Union{Number,GenericAffExpr,GenericQuadExpr},
     set::MOI.AbstractScalarSet,
 )
     if MOI.Utilities.supports_shift_constant(typeof(set))
-        offset = constant(expr)
-        add_to_expression!(expr, -offset)
+        expr, offset = _clear_constant!(expr)
         new_set = MOI.Utilities.shift_constant(set, -offset)
         return ScalarConstraint(expr, new_set)
     else
@@ -573,32 +580,18 @@ function build_constraint(
 end
 function build_constraint(
     _error::Function,
-    α::Number,
-    set::MOI.AbstractScalarSet,
-)
-    return build_constraint(_error, convert(AffExpr, α), set)
-end
-function build_constraint(
-    _error::Function,
     ::MutableArithmetics.Zero,
     set::MOI.AbstractScalarSet,
 )
-    return build_constraint(_error, zero(AffExpr), set)
+    return build_constraint(_error, false, set)
 end
 
 function build_constraint(
     ::Function,
-    x::AbstractVector{<:AbstractJuMPScalar},
+    x::AbstractVector{<:Union{Number,AbstractJuMPScalar}},
     set::MOI.AbstractVectorSet,
 )
     return VectorConstraint(x, set)
-end
-function build_constraint(
-    _error::Function,
-    a::Vector{<:Number},
-    set::MOI.AbstractVectorSet,
-)
-    return build_constraint(_error, convert(Vector{AffExpr}, a), set)
 end
 
 function build_constraint(
@@ -722,6 +715,40 @@ function build_constraint(
     )
 end
 
+model_convert(model, set::MOI.AbstractVectorSet) = set
+
+function model_convert(model, set::MOI.AbstractScalarSet)
+    T = value_type(typeof(model))
+    if MOI.Utilities.supports_shift_constant(typeof(set))
+        return MOI.Utilities.shift_constant(set, zero(T))
+    else
+        return set
+    end
+end
+
+model_convert(model, func::AbstractJuMPScalar) = func
+
+function model_convert(model, α::Number)
+    T = value_type(typeof(model))
+    V = variable_ref_type(model)
+    C = _complex_convert_type(T, typeof(α))
+    return convert(GenericAffExpr{C,V}, α)
+end
+
+function model_convert(model, con::BridgeableConstraint)
+    return BridgeableConstraint(model_convert(model, con.constraint), con.bridge_type)
+end
+
+function model_convert(model, con::ScalarConstraint)
+    return ScalarConstraint(model_convert(model, con.func), model_convert(model, con.set))
+end
+
+function model_convert(model, con::VectorConstraint)
+    return VectorConstraint(model_convert.(model, con.func), model_convert(model, con.set), con.shape)
+end
+
+model_convert(model, con) = con
+
 # TODO: update 3-argument @constraint macro to pass through names like @variable
 
 """
@@ -829,6 +856,11 @@ function _constraint_macro(
     vectorized, parsecode, buildcall = parsefun(_error, x)
     _add_positional_args(buildcall, extra)
     _add_kw_args(buildcall, extra_kw_args)
+    if vectorized
+        buildcall = :(model_convert.($model, $buildcall))
+    else
+        buildcall = :(model_convert($model, $buildcall))
+    end
     name_expr = _name_call(base_name, idxvars)
     new_name_expr = if isempty(set_string_name_kw_args)
         Expr(:if, :(set_string_names_on_creation($model)), name_expr, "")
