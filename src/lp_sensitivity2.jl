@@ -317,7 +317,7 @@ Return the standard form:
 function _standard_form_matrix(model::GenericModel{T}) where {T}
     columns = Dict(var => i for (i, var) in enumerate(all_variables(model)))
     n = length(columns)
-    c_l, c_u = fill(-typemin(T), n), fill(typemax(T), n)
+    c_l, c_u = fill(typemin(T), n), fill(typemax(T), n)
     r_l, r_u = T[], T[]
     I, J, V = Int[], Int[], T[]
     bound_constraints = ConstraintRef[]
