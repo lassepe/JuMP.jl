@@ -3,7 +3,7 @@
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-struct _SolutionSummary
+struct _SolutionSummary{T}
     result::Int
     verbose::Bool
     solver::String
@@ -16,12 +16,12 @@ struct _SolutionSummary
     has_values::Bool
     has_duals::Bool
     # Candidate solution
-    objective_value::Union{Missing,Float64}
-    objective_bound::Union{Missing,Float64}
-    relative_gap::Union{Missing,Float64}
-    dual_objective_value::Union{Missing,Float64}
-    primal_solution::Union{Missing,Dict{String,Float64}}
-    dual_solution::Union{Missing,Dict{String,Float64}}
+    objective_value::Union{Missing,T}
+    objective_bound::Union{Missing,T}
+    relative_gap::Union{Missing,T}
+    dual_objective_value::Union{Missing,T}
+    primal_solution::Union{Missing,Dict{String,T}}
+    dual_solution::Union{Missing,Dict{String,T}}
     # Work counters
     solve_time::Union{Missing,Float64}
     barrier_iterations::Union{Missing,Int}
@@ -30,7 +30,7 @@ struct _SolutionSummary
 end
 
 """
-    solution_summary(model::Model; result::Int = 1, verbose::Bool = false)
+    solution_summary(model::GenericModel; result::Int = 1, verbose::Bool = false)
 
 Return a struct that can be used print a summary of the solution in result
 `result`.
@@ -54,7 +54,7 @@ function foo(model)
 end
 ```
 """
-function solution_summary(model::Model; result::Int = 1, verbose::Bool = false)
+function solution_summary(model::GenericModel; result::Int = 1, verbose::Bool = false)
     num_results = result_count(model)
     has_primal = has_values(model; result = result)
     has_dual = has_duals(model; result = result)
@@ -179,7 +179,7 @@ function _show_work_counters_summary(io::IO, summary::_SolutionSummary)
 end
 
 function _get_solution_dict(model, result)
-    dict = Dict{String,Float64}()
+    dict = Dict{String,value_type(model)}()
     for x in all_variables(model)
         variable_name = name(x)
         if !isempty(variable_name)
@@ -190,7 +190,7 @@ function _get_solution_dict(model, result)
 end
 
 function _get_constraint_dict(model, result)
-    dict = Dict{String,Float64}()
+    dict = Dict{String,value_type(model)}()
     for (F, S) in list_of_constraint_types(model)
         for constraint in all_constraints(model, F, S)
             constraint_name = name(constraint)

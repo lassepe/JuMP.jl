@@ -657,7 +657,7 @@ function moi_function_type(::Type{<:GenericAffExpr{T}}) where {T}
 end
 
 function GenericAffExpr{C,VariableRef}(
-    m::Model,
+    m::GenericModel,
     f::MOI.ScalarAffineFunction,
 ) where {C}
     aff = GenericAffExpr{C,VariableRef}(f.constant)
@@ -668,24 +668,24 @@ function GenericAffExpr{C,VariableRef}(
 end
 
 function jump_function_type(
-    ::Model,
+    ::GenericModel,
     ::Type{MOI.ScalarAffineFunction{T}},
 ) where {T}
     return GenericAffExpr{T,VariableRef}
 end
 
-function jump_function(model::Model, f::MOI.ScalarAffineFunction{T}) where {T}
+function jump_function(model::GenericModel, f::MOI.ScalarAffineFunction{T}) where {T}
     return GenericAffExpr{T,VariableRef}(model, f)
 end
 
 function jump_function_type(
-    ::Model,
+    ::GenericModel,
     ::Type{MOI.VectorAffineFunction{T}},
 ) where {T}
     return Vector{GenericAffExpr{T,VariableRef}}
 end
 
-function jump_function(model::Model, f::MOI.VectorAffineFunction{T}) where {T}
+function jump_function(model::GenericModel, f::MOI.VectorAffineFunction{T}) where {T}
     ret = GenericAffExpr{T,VariableRef}[]
     for scalar_f in MOIU.eachscalar(f)
         g = GenericAffExpr{T,VariableRef}(scalar_f.constant)

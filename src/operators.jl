@@ -195,7 +195,7 @@ function Base.:/(lhs::GenericAffExpr, rhs::_Constant)
 end
 
 function Base.:^(lhs::AbstractVariableRef, rhs::Integer)
-    T = value_type(lhs)
+    T = value_type(typeof(lhs))
     if rhs == 2
         return lhs * lhs
     elseif rhs == 1
@@ -278,7 +278,7 @@ end
 
 """
     operator_warn(model::AbstractModel)
-    operator_warn(model::Model)
+    operator_warn(model::GenericModel)
 
 This function is called on the model whenever two affine expressions are added
 together without using `destructive_add!`, and at least one of the two
@@ -289,7 +289,7 @@ a warning is generated once.
 """
 operator_warn(::AbstractModel) = nothing
 
-function operator_warn(model::Model)
+function operator_warn(model::GenericModel)
     model.operator_counter += 1
     if model.operator_counter > 20000
         @warn(

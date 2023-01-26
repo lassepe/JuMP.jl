@@ -36,7 +36,7 @@ reference of the copied model can be obtained by indexing the map with the
 reference of the corresponding reference of the original model.
 """
 struct ReferenceMap
-    model::Model
+    model::GenericModel
     index_map::MOIU.IndexMap
 end
 
@@ -87,7 +87,7 @@ function _should_copy_complete_object(
 end # all(filter_constraints.(value))
 
 """
-    copy_model(model::Model; filter_constraints::Union{Nothing, Function}=nothing)
+    copy_model(model::GenericModel; filter_constraints::Union{Nothing, Function}=nothing)
 
 Return a copy of the model `model` and a [`ReferenceMap`](@ref) that can be used
 to obtain the variable and constraint reference of the new model corresponding
@@ -123,7 +123,7 @@ cref_new = reference_map[cref]
 ```
 """
 function copy_model(
-    model::Model;
+    model::GenericModel;
     filter_constraints::Union{Nothing,Function} = nothing,
 )
     if mode(model) == DIRECT
@@ -223,7 +223,7 @@ function Base.copy(model::AbstractModel)
 end
 
 """
-    copy_conflict(model::Model)
+    copy_conflict(model::GenericModel)
 
 Return a copy of the current conflict for the model `model` and a
 [`ReferenceMap`](@ref) that can be used to obtain the variable and constraint
@@ -262,7 +262,7 @@ end
 new_model, reference_map = copy_conflict(model)
 ```
 """
-function copy_conflict(model::Model)
+function copy_conflict(model::GenericModel)
     filter_constraints =
         (cref) ->
             MOI.get(model, MOI.ConstraintConflictStatus(), cref) !=
@@ -275,13 +275,13 @@ end
 # Calling `deepcopy` over a JuMP model is not supported, nor planned to be
 # supported, because it would involve making a deep copy of the underlying
 # solver (behind a C pointer).
-function Base.deepcopy(::Model)
+function Base.deepcopy(::GenericModel)
     return error(
         "`JuMP.Model` does not support `deepcopy` as the reference to the underlying solver cannot be deep copied, use `copy` instead.",
     )
 end
 
-function MOI.copy_to(dest::MOI.ModelLike, src::Model)
+function MOI.copy_to(dest::MOI.ModelLike, src::GenericModel)
     if nonlinear_model(src) !== nothing
         # Re-set the NLP block in-case things have changed since last
         # solve.
@@ -295,7 +295,7 @@ function MOI.copy_to(dest::MOI.ModelLike, src::Model)
     return MOI.copy_to(dest, backend(src))
 end
 
-function MOI.copy_to(dest::Model, src::MOI.ModelLike)
+function MOI.copy_to(dest::GenericModel, src::MOI.ModelLike)
     index_map = MOI.copy_to(backend(dest), src)
     if MOI.NLPBlock() in MOI.get(src, MOI.ListOfModelAttributesSet())
         block = MOI.get(src, MOI.NLPBlock())

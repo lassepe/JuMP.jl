@@ -66,7 +66,7 @@ function _MA.promote_operation(
     ::Type{V},
     ::Type{V},
 ) where {V<:AbstractVariableRef}
-    return GenericAffExpr{Float64,V}
+    return GenericAffExpr{value_type(V),V}
 end
 
 function _MA.promote_operation(
@@ -114,7 +114,7 @@ function _MA.promote_operation(
     ::Type{V},
     ::Type{V},
 ) where {V<:AbstractVariableRef}
-    return GenericQuadExpr{Float64,V}
+    return GenericQuadExpr{value_type(V),V}
 end
 
 function _MA.promote_operation(

@@ -862,11 +862,11 @@ function _constraint_macro(
 end
 
 """
-    @constraint(m::Model, expr, kw_args...)
+    @constraint(m::GenericModel, expr, kw_args...)
 
 Add a constraint described by the expression `expr`.
 
-    @constraint(m::Model, ref[i=..., j=..., ...], expr, kw_args...)
+    @constraint(m::GenericModel, ref[i=..., j=..., ...], expr, kw_args...)
 
 Add a group of constraints described by the expression `expr` parametrized by
 `i`, `j`, ...
@@ -1232,7 +1232,7 @@ _replace_zero(::_MA.Zero) = 0.0
 _replace_zero(x) = x
 
 """
-    @objective(model::Model, sense, func)
+    @objective(model::GenericModel, sense, func)
 
 Set the objective sense to `sense` and objective function to `func`. The
 objective sense can be either `Min`, `Max`, `MathOptInterface.MIN_SENSE`,
@@ -2372,7 +2372,7 @@ macro NLobjective(model, sense, x)
 end
 
 """
-    @NLconstraint(m::Model, expr)
+    @NLconstraint(m::GenericModel, expr)
 
 Add a constraint described by the nonlinear expression `expr`. See also
 [`@constraint`](@ref). For example:

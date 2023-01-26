@@ -30,7 +30,7 @@ end
 
 """
     write_to_file(
-        model::Model,
+        model::GenericModel,
         filename::String;
         format::MOI.FileFormats.FileFormat = MOI.FileFormats.FORMAT_AUTOMATIC,
         kwargs...,
@@ -44,7 +44,7 @@ If the filename ends in `.bz2`, it will be compressed using BZip2.
 Other `kwargs` are passed to the `Model` constructor of the chosen format.
 """
 function write_to_file(
-    model::Model,
+    model::GenericModel,
     filename::String;
     format::MOI.FileFormats.FileFormat = MOI.FileFormats.FORMAT_AUTOMATIC,
     kwargs...,
@@ -63,7 +63,7 @@ end
 """
     Base.write(
         io::IO,
-        model::Model;
+        model::GenericModel;
         format::MOI.FileFormats.FileFormat = MOI.FileFormats.FORMAT_MOF,
         kwargs...,
     )
@@ -74,7 +74,7 @@ Other `kwargs` are passed to the `Model` constructor of the chosen format.
 """
 function Base.write(
     io::IO,
-    model::Model;
+    model::GenericModel;
     format::MOI.FileFormats.FileFormat = MOI.FileFormats.FORMAT_MOF,
     kwargs...,
 )

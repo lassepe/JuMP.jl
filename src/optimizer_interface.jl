@@ -198,31 +198,31 @@ function get_optimizer_attribute(
 end
 
 """
-    set_silent(model::Model)
+    set_silent(model::GenericModel)
 
 Takes precedence over any other attribute controlling verbosity and requires the
 solver to produce no output.
 
 See also: [`unset_silent`](@ref).
 """
-function set_silent(model::Model)
+function set_silent(model::GenericModel)
     return MOI.set(model, MOI.Silent(), true)
 end
 
 """
-    unset_silent(model::Model)
+    unset_silent(model::GenericModel)
 
 Neutralize the effect of the `set_silent` function and let the solver attributes
 control the verbosity.
 
 See also: [`set_silent`](@ref).
 """
-function unset_silent(model::Model)
+function unset_silent(model::GenericModel)
     return MOI.set(model, MOI.Silent(), false)
 end
 
 """
-    set_time_limit_sec(model::Model, limit::Float64)
+    set_time_limit_sec(model::GenericModel, limit::Float64)
 
 Set the time limit (in seconds) of the solver.
 
@@ -231,27 +231,27 @@ Can be unset using [`unset_time_limit_sec`](@ref) or with `limit` set to
 
 See also: [`unset_time_limit_sec`](@ref), [`time_limit_sec`](@ref).
 """
-function set_time_limit_sec(model::Model, limit::Real)
+function set_time_limit_sec(model::GenericModel, limit::Real)
     return MOI.set(model, MOI.TimeLimitSec(), convert(Float64, limit))
 end
 
-function set_time_limit_sec(model::Model, ::Nothing)
+function set_time_limit_sec(model::GenericModel, ::Nothing)
     return unset_time_limit_sec(model)
 end
 
 """
-    unset_time_limit_sec(model::Model)
+    unset_time_limit_sec(model::GenericModel)
 
 Unset the time limit of the solver.
 
 See also: [`set_time_limit_sec`](@ref), [`time_limit_sec`](@ref).
 """
-function unset_time_limit_sec(model::Model)
+function unset_time_limit_sec(model::GenericModel)
     return MOI.set(model, MOI.TimeLimitSec(), nothing)
 end
 
 """
-    time_limit_sec(model::Model)
+    time_limit_sec(model::GenericModel)
 
 Return the time limit (in seconds) of the `model`.
 
@@ -259,7 +259,7 @@ Returns `nothing` if unset.
 
 See also: [`set_time_limit_sec`](@ref), [`unset_time_limit_sec`](@ref).
 """
-function time_limit_sec(model::Model)
+function time_limit_sec(model::GenericModel)
     return MOI.get(model, MOI.TimeLimitSec())
 end
 
@@ -276,7 +276,7 @@ function _try_get_solver_name(model_like)
 end
 
 """
-    solver_name(model::Model)
+    solver_name(model::GenericModel)
 
 If available, returns the `SolverName` property of the underlying optimizer.
 
@@ -286,7 +286,7 @@ optimizer is attached.
 Returns `"SolverName() attribute not implemented by the optimizer."` if the
 attribute is not implemented.
 """
-function solver_name(model::Model)
+function solver_name(model::GenericModel)
     if mode(model) != DIRECT && MOIU.state(backend(model)) == MOIU.NO_OPTIMIZER
         return "No optimizer attached."
     end
@@ -294,7 +294,7 @@ function solver_name(model::Model)
 end
 
 """
-    error_if_direct_mode(model::Model, func::Symbol)
+    error_if_direct_mode(model::GenericModel, func::Symbol)
 
 Errors if `model` is in direct mode during a call from the function named
 `func`.
@@ -302,7 +302,7 @@ Errors if `model` is in direct mode during a call from the function named
 Used internally within JuMP, or by JuMP extensions who do not want to support
 models in direct mode.
 """
-function error_if_direct_mode(model::Model, func::Symbol)
+function error_if_direct_mode(model::GenericModel, func::Symbol)
     if mode(model) == DIRECT
         error("The `$func` function is not supported in DIRECT mode.")
     end
@@ -312,14 +312,14 @@ end
 # These methods directly map to CachingOptimizer methods.
 
 """
-    MOIU.reset_optimizer(model::Model, optimizer::MOI.AbstractOptimizer)
+    MOIU.reset_optimizer(model::GenericModel, optimizer::MOI.AbstractOptimizer)
 
 Call `MOIU.reset_optimizer` on the backend of `model`.
 
 Cannot be called in direct mode.
 """
 function MOIU.reset_optimizer(
-    model::Model,
+    model::GenericModel,
     optimizer::MOI.AbstractOptimizer,
     ::Bool = true,
 )
@@ -329,39 +329,39 @@ function MOIU.reset_optimizer(
 end
 
 """
-    MOIU.reset_optimizer(model::Model)
+    MOIU.reset_optimizer(model::GenericModel)
 
 Call `MOIU.reset_optimizer` on the backend of `model`.
 
 Cannot be called in direct mode.
 """
-function MOIU.reset_optimizer(model::Model)
+function MOIU.reset_optimizer(model::GenericModel)
     error_if_direct_mode(model, :reset_optimizer)
     MOIU.reset_optimizer(backend(model))
     return
 end
 
 """
-    MOIU.drop_optimizer(model::Model)
+    MOIU.drop_optimizer(model::GenericModel)
 
 Call `MOIU.drop_optimizer` on the backend of `model`.
 
 Cannot be called in direct mode.
 """
-function MOIU.drop_optimizer(model::Model)
+function MOIU.drop_optimizer(model::GenericModel)
     error_if_direct_mode(model, :drop_optimizer)
     MOIU.drop_optimizer(backend(model))
     return
 end
 
 """
-    MOIU.attach_optimizer(model::Model)
+    MOIU.attach_optimizer(model::GenericModel)
 
 Call `MOIU.attach_optimizer` on the backend of `model`.
 
 Cannot be called in direct mode.
 """
-function MOIU.attach_optimizer(model::Model)
+function MOIU.attach_optimizer(model::GenericModel)
     error_if_direct_mode(model, :attach_optimizer)
     MOIU.attach_optimizer(backend(model))
     return
@@ -369,7 +369,7 @@ end
 
 """
     set_optimizer(
-        model::Model,
+        model::GenericModel,
         optimizer_factory;
         add_bridges::Bool = true,
     )
@@ -396,16 +396,16 @@ set_optimizer(model, HiGHS.Optimizer; add_bridges = false)
 ```
 """
 function set_optimizer(
-    model::Model,
+    model::GenericModel{T},
     (@nospecialize optimizer_constructor);
     add_bridges::Bool = true,
-)
+) where {T}
     error_if_direct_mode(model, :set_optimizer)
     if add_bridges
         optimizer =
-            MOI.instantiate(optimizer_constructor; with_bridge_type = Float64)
+            MOI.instantiate(optimizer_constructor; with_bridge_type = T)
         for bridge_type in model.bridge_types
-            _moi_add_bridge(optimizer, bridge_type)
+            _moi_add_bridge(optimizer, bridge_type, T)
         end
     else
         optimizer = MOI.instantiate(optimizer_constructor)
@@ -419,7 +419,7 @@ end
 
 """
     optimize!(
-        model::Model;
+        model::GenericModel;
         ignore_optimize_hook = (model.optimize_hook === nothing),
         _differentiation_backend::MOI.Nonlinear.AbstractAutomaticDifferentiation =
             MOI.Nonlinear.SparseReverseMode(),
@@ -448,7 +448,7 @@ If you require only `:ExprGraph`, it is more efficient to pass
 `_differentiation_backend = MOI.Nonlinear.ExprGraphOnly()`.
 """
 function optimize!(
-    model::Model;
+    model::GenericModel;
     ignore_optimize_hook = (model.optimize_hook === nothing),
     _differentiation_backend::MOI.Nonlinear.AbstractAutomaticDifferentiation = MOI.Nonlinear.SparseReverseMode(),
     kwargs...,
@@ -496,7 +496,7 @@ function optimize!(
 end
 
 """
-    compute_conflict!(model::Model)
+    compute_conflict!(model::GenericModel)
 
 Compute a conflict if the model is infeasible. If an optimizer has not
 been set yet (see [`set_optimizer`](@ref)), a [`NoOptimizer`](@ref)
@@ -506,7 +506,7 @@ The status of the conflict can be checked with the `MOI.ConflictStatus`
 model attribute. Then, the status for each constraint can be queried with
 the `MOI.ConstraintConflictStatus` attribute.
 """
-function compute_conflict!(model::Model)
+function compute_conflict!(model::GenericModel)
     if mode(model) != DIRECT && MOIU.state(backend(model)) == MOIU.NO_OPTIMIZER
         throw(NoOptimizer())
     end
@@ -515,16 +515,16 @@ function compute_conflict!(model::Model)
 end
 
 """
-    termination_status(model::Model)
+    termination_status(model::GenericModel)
 
 Return a [`MOI.TerminationStatusCode`](@ref) describing why the solver stopped
 (i.e., the [`MOI.TerminationStatus`](@ref) attribute).
 """
-function termination_status(model::Model)
+function termination_status(model::GenericModel)
     return MOI.get(model, MOI.TerminationStatus())::MOI.TerminationStatusCode
 end
 
-function MOI.get(model::Model, attr::MOI.TerminationStatus)
+function MOI.get(model::GenericModel, attr::MOI.TerminationStatus)
     if model.is_model_dirty && mode(model) != DIRECT
         return MOI.OPTIMIZE_NOT_CALLED
     end
@@ -532,12 +532,12 @@ function MOI.get(model::Model, attr::MOI.TerminationStatus)
 end
 
 """
-    result_count(model::Model)
+    result_count(model::GenericModel)
 
 Return the number of results available to query after a call to
 [`optimize!`](@ref).
 """
-function result_count(model::Model)::Int
+function result_count(model::GenericModel)::Int
     if termination_status(model) == MOI.OPTIMIZE_NOT_CALLED
         return 0
     end
@@ -545,19 +545,19 @@ function result_count(model::Model)::Int
 end
 
 """
-    raw_status(model::Model)
+    raw_status(model::GenericModel)
 
 Return the reason why the solver stopped in its own words (i.e., the
 MathOptInterface model attribute `RawStatusString`).
 """
-function raw_status(model::Model)
+function raw_status(model::GenericModel)
     if MOI.get(model, MOI.TerminationStatus()) == MOI.OPTIMIZE_NOT_CALLED
         return "optimize not called"
     end
     return MOI.get(model, MOI.RawStatusString())
 end
 
-function MOI.get(model::Model, attr::Union{MOI.PrimalStatus,MOI.DualStatus})
+function MOI.get(model::GenericModel, attr::Union{MOI.PrimalStatus,MOI.DualStatus})
     if model.is_model_dirty && mode(model) != DIRECT
         return MOI.NO_SOLUTION
     end
@@ -565,7 +565,7 @@ function MOI.get(model::Model, attr::Union{MOI.PrimalStatus,MOI.DualStatus})
 end
 
 """
-    primal_status(model::Model; result::Int = 1)
+    primal_status(model::GenericModel; result::Int = 1)
 
 Return a [`MOI.ResultStatusCode`](@ref) describing the status of the most recent
 primal solution of the solver (i.e., the [`MOI.PrimalStatus`](@ref) attribute)
@@ -573,12 +573,12 @@ associated with the result index `result`.
 
 See also: [`result_count`](@ref).
 """
-function primal_status(model::Model; result::Int = 1)
+function primal_status(model::GenericModel; result::Int = 1)
     return MOI.get(model, MOI.PrimalStatus(result))::MOI.ResultStatusCode
 end
 
 """
-    dual_status(model::Model; result::Int = 1)
+    dual_status(model::GenericModel; result::Int = 1)
 
 Return a [`MOI.ResultStatusCode`](@ref) describing the status of the most recent
 dual solution of the solver (i.e., the [`MOI.DualStatus`](@ref) attribute)
@@ -586,64 +586,64 @@ associated with the result index `result`.
 
 See also: [`result_count`](@ref).
 """
-function dual_status(model::Model; result::Int = 1)
+function dual_status(model::GenericModel; result::Int = 1)
     return MOI.get(model, MOI.DualStatus(result))::MOI.ResultStatusCode
 end
 
 """
-    solve_time(model::Model)
+    solve_time(model::GenericModel)
 
 If available, returns the solve time reported by the solver.
 Returns "ArgumentError: ModelLike of type `Solver.Optimizer` does not support
 accessing the attribute MathOptInterface.SolveTimeSec()" if the attribute is
 not implemented.
 """
-function solve_time(model::Model)
+function solve_time(model::GenericModel)
     return MOI.get(model, MOI.SolveTimeSec())
 end
 
 """
-    simplex_iterations(model::Model)
+    simplex_iterations(model::GenericModel)
 
 Gets the cumulative number of simplex iterations during the most-recent
 optimization.
 
 Solvers must implement `MOI.SimplexIterations()` to use this function.
 """
-function simplex_iterations(model::Model)
+function simplex_iterations(model::GenericModel)
     return MOI.get(model, MOI.SimplexIterations())
 end
 
 """
-    barrier_iterations(model::Model)
+    barrier_iterations(model::GenericModel)
 
 Gets the cumulative number of barrier iterations during the most recent
 optimization.
 
 Solvers must implement `MOI.BarrierIterations()` to use this function.
 """
-function barrier_iterations(model::Model)
+function barrier_iterations(model::GenericModel)
     return MOI.get(model, MOI.BarrierIterations())
 end
 
 """
-    node_count(model::Model)
+    node_count(model::GenericModel)
 
 Gets the total number of branch-and-bound nodes explored during the most recent
 optimization in a Mixed Integer Program.
 
 Solvers must implement `MOI.NodeCount()` to use this function.
 """
-function node_count(model::Model)
+function node_count(model::GenericModel)
     return MOI.get(model, MOI.NodeCount())
 end
 
 """
-    get(model::Model, attr::MathOptInterface.AbstractOptimizerAttribute)
+    get(model::GenericModel, attr::MathOptInterface.AbstractOptimizerAttribute)
 
 Return the value of the attribute `attr` from the model's MOI backend.
 """
-function MOI.get(model::Model, attr::MOI.AbstractOptimizerAttribute)
+function MOI.get(model::GenericModel, attr::MOI.AbstractOptimizerAttribute)
     return MOI.get(backend(model), attr)
 end
 
@@ -681,11 +681,11 @@ function _moi_get_result(model::MOIU.CachingOptimizer, args...)
 end
 
 """
-    get(model::Model, attr::MathOptInterface.AbstractModelAttribute)
+    get(model::GenericModel, attr::MathOptInterface.AbstractModelAttribute)
 
 Return the value of the attribute `attr` from the model's MOI backend.
 """
-function MOI.get(model::Model, attr::MOI.AbstractModelAttribute)
+function MOI.get(model::GenericModel, attr::MOI.AbstractModelAttribute)
     if !MOI.is_set_by_optimize(attr)
         return MOI.get(backend(model), attr)
     elseif model.is_model_dirty && mode(model) != DIRECT
@@ -701,7 +701,7 @@ function MOI.get(model::Model, attr::MOI.AbstractModelAttribute)
 end
 
 function MOI.get(
-    model::Model,
+    model::GenericModel,
     attr::MOI.AbstractVariableAttribute,
     v::VariableRef,
 )
@@ -721,7 +721,7 @@ function MOI.get(
 end
 
 function MOI.get(
-    model::Model,
+    model::GenericModel,
     attr::MOI.AbstractConstraintAttribute,
     cr::ConstraintRef,
 )
@@ -740,18 +740,18 @@ function MOI.get(
     return _moi_get_result(backend(model), attr, index(cr))
 end
 
-function MOI.set(m::Model, attr::MOI.AbstractOptimizerAttribute, value)
+function MOI.set(m::GenericModel, attr::MOI.AbstractOptimizerAttribute, value)
     m.is_model_dirty = true
     return MOI.set(backend(m), attr, value)
 end
 
-function MOI.set(m::Model, attr::MOI.AbstractModelAttribute, value)
+function MOI.set(m::GenericModel, attr::MOI.AbstractModelAttribute, value)
     m.is_model_dirty = true
     return MOI.set(backend(m), attr, value)
 end
 
 function MOI.set(
-    model::Model,
+    model::GenericModel,
     attr::MOI.AbstractVariableAttribute,
     v::VariableRef,
     value,
@@ -762,7 +762,7 @@ function MOI.set(
 end
 
 function MOI.set(
-    model::Model,
+    model::GenericModel,
     attr::MOI.AbstractConstraintAttribute,
     cr::ConstraintRef,
     value,

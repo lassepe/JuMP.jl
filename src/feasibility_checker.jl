@@ -3,7 +3,7 @@
 #  License, v. 2.0. If a copy of the MPL was not distributed with this
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-function _last_primal_solution(model::Model)
+function _last_primal_solution(model::GenericModel)
     if !has_values(model)
         error(
             "No primal solution is available. You must provide a point at " *
@@ -17,7 +17,7 @@ end
     primal_feasibility_report(
         model::GenericModel{T},
         point::AbstractDict{VariableRef,T} = _last_primal_solution(model),
-        atol::Float64 = 0.0,
+        atol::T = 0.0,
         skip_missing::Bool = false,
     )::Dict{Any,T}
 
@@ -134,7 +134,7 @@ function _add_infeasible_constraints(
     model::GenericModel{T},
     ::Type{F},
     ::Type{S},
-    violated_constraints::Dict{Any,Float64},
+    violated_constraints::Dict{Any,T},
     point_f::Function,
     atol::T,
 ) where {T,F,S}

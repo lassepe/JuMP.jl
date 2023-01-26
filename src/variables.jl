@@ -4,11 +4,11 @@
 #  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 """
-    num_variables(model::Model)::Int64
+    num_variables(model::GenericModel)::Int64
 
 Returns number of variables in `model`.
 """
-num_variables(model::Model)::Int64 = MOI.get(model, MOI.NumberOfVariables())
+num_variables(model::GenericModel)::Int64 = MOI.get(model, MOI.NumberOfVariables())
 
 """
     AbstractVariable
@@ -278,13 +278,13 @@ Base.broadcastable(v::GenericVariableRef) = Ref(v)
 Base.zero(v::AbstractVariableRef) = zero(typeof(v))
 
 function Base.zero(::Type{V}) where {V<:AbstractVariableRef}
-    return zero(GenericAffExpr{Float64,V})
+    return zero(GenericAffExpr{value_type(V),V})
 end
 
 Base.one(v::AbstractVariableRef) = one(typeof(v))
 
 function Base.one(::Type{V}) where {V<:AbstractVariableRef}
-    return one(GenericAffExpr{Float64,V})
+    return one(GenericAffExpr{value_type(V),V})
 end
 
 """
@@ -318,7 +318,7 @@ function isequal_canonical(v::GenericVariableRef, other::GenericVariableRef)
 end
 
 """
-    delete(model::Model, variable_ref::GenericVariableRef)
+    delete(model::GenericModel, variable_ref::GenericVariableRef)
 
 Delete the variable associated with `variable_ref` from the model `model`.
 
@@ -345,7 +345,7 @@ function delete(model::GenericModel, variable_ref::GenericVariableRef)
 end
 
 """
-    delete(model::Model, variable_refs::Vector{VariableRef})
+    delete(model::GenericModel, variable_refs::Vector{VariableRef})
 
 Delete the variables associated with `variable_refs` from the model `model`.
 Solvers may implement methods for deleting multiple variables that are
@@ -369,7 +369,7 @@ function delete(
 end
 
 """
-    is_valid(model::Model, variable_ref::GenericVariableRef)
+    is_valid(model::GenericModel, variable_ref::GenericVariableRef)
 
 Return `true` if `variable` refers to a valid variable in `model`.
 """
@@ -487,7 +487,7 @@ Stacktrace:
  [2] get(::MOIU.Model{Float64}, ::Type{MathOptInterface.VariableIndex}, ::String) at /home/blegat/.julia/dev/MathOptInterface/src/Utilities/model.jl:222
  [3] get at /home/blegat/.julia/dev/MathOptInterface/src/Utilities/universalfallback.jl:201 [inlined]
  [4] get(::MathOptInterface.Utilities.CachingOptimizer{MathOptInterface.AbstractOptimizer,MathOptInterface.Utilities.UniversalFallback{MOIU.Model{Float64}}}, ::Type{MathOptInterface.VariableIndex}, ::String) at /home/blegat/.julia/dev/MathOptInterface/src/Utilities/cachingoptimizer.jl:490
- [5] variable_by_name(::Model, ::String) at /home/blegat/.julia/dev/JuMP/src/variables.jl:268
+ [5] variable_by_name(::GenericModel, ::String) at /home/blegat/.julia/dev/JuMP/src/variables.jl:268
  [6] top-level scope at none:0
 
 julia> var = @variable(model, base_name="y")
@@ -537,15 +537,15 @@ end
 function moi_function_type(::Type{<:Vector{<:AbstractVariableRef}})
     return MOI.VectorOfVariables
 end
-function jump_function_type(::Model, ::Type{MOI.VectorOfVariables})
+function jump_function_type(::GenericModel, ::Type{MOI.VectorOfVariables})
     return Vector{VariableRef}
 end
-function jump_function(model::Model, variables::MOI.VectorOfVariables)
+function jump_function(model::GenericModel, variables::MOI.VectorOfVariables)
     return VariableRef[VariableRef(model, v) for v in variables.variables]
 end
 
-jump_function_type(::Model, ::Type{MOI.VariableIndex}) = VariableRef
-function jump_function(model::Model, variable::MOI.VariableIndex)
+jump_function_type(::GenericModel, ::Type{MOI.VariableIndex}) = VariableRef
+function jump_function(model::GenericModel, variable::MOI.VariableIndex)
     return VariableRef(model, variable)
 end
 
@@ -1120,33 +1120,33 @@ function value(var_value::Function, v::GenericVariableRef)
 end
 
 """
-    has_values(model::Model; result::Int = 1)
+    has_values(model::GenericModel; result::Int = 1)
 
 Return `true` if the solver has a primal solution in result index `result`
 available to query, otherwise return `false`.
 
 See also [`value`](@ref) and [`result_count`](@ref).
 """
-function has_values(model::Model; result::Int = 1)
+function has_values(model::GenericModel; result::Int = 1)
     return primal_status(model; result = result) != MOI.NO_SOLUTION
 end
 
 """
-    add_variable(m::Model, v::AbstractVariable, name::String="")
+    add_variable(m::GenericModel, v::AbstractVariable, name::String="")
 
 Add a variable `v` to `Model m` and sets its name.
 """
 function add_variable end
 
-function add_variable(model::Model, v::ScalarVariable, name::String = "")
+function add_variable(model::GenericModel, v::ScalarVariable, name::String = "")
     model.is_model_dirty = true
     return _moi_add_variable(backend(model), model, v, name)
 end
 
-function _moi_add_variable(moi_backend, model, v::ScalarVariable, name::String)
+function _moi_add_variable(moi_backend, model::GenericModel{T}, v::ScalarVariable, name::String) where {T}
     index = MOI.add_variable(moi_backend)
     var_ref = VariableRef(model, index)
-    _moi_constrain_variable(moi_backend, index, v.info)
+    _moi_constrain_variable(moi_backend, index, v.info, T)
     if !isempty(name) &&
        MOI.supports(moi_backend, MOI.VariableName(), MOI.VariableIndex)
         set_name(var_ref, name)
@@ -1154,28 +1154,28 @@ function _moi_add_variable(moi_backend, model, v::ScalarVariable, name::String)
     return var_ref
 end
 
-function _moi_constrain_variable(moi_backend::MOI.ModelLike, index, info)
+function _moi_constrain_variable(moi_backend::MOI.ModelLike, index, info, ::Type{T}) where {T}
     # We don't call the _moi* versions (e.g., _moi_set_lower_bound) because they
     # have extra checks that are not necessary for newly created variables.
     if info.has_lb
         _moi_add_constraint(
             moi_backend,
             index,
-            MOI.GreaterThan{Float64}(info.lower_bound),
+            MOI.GreaterThan{T}(info.lower_bound),
         )
     end
     if info.has_ub
         _moi_add_constraint(
             moi_backend,
             index,
-            MOI.LessThan{Float64}(info.upper_bound),
+            MOI.LessThan{T}(info.upper_bound),
         )
     end
     if info.has_fix
         _moi_add_constraint(
             moi_backend,
             index,
-            MOI.EqualTo{Float64}(info.fixed_value),
+            MOI.EqualTo{T}(info.fixed_value),
         )
     end
     if info.binary
@@ -1189,7 +1189,7 @@ function _moi_constrain_variable(moi_backend::MOI.ModelLike, index, info)
             moi_backend,
             MOI.VariablePrimalStart(),
             index,
-            convert(Float64, info.start),
+            convert(T, info.start),
         )
     end
 end
@@ -1201,7 +1201,7 @@ Variable `scalar_variables` constrained to belong to `set`.
 Adding this variable can be understood as doing:
 ```julia
 function JuMP.add_variable(
-    model::Model,
+    model::GenericModel,
     variable::VariableConstrainedOnCreation,
     names,
 )
@@ -1224,21 +1224,22 @@ struct VariableConstrainedOnCreation{
 end
 
 function add_variable(
-    model::Model,
+    model::GenericModel{T},
     variable::VariableConstrainedOnCreation,
     name::String,
-)
+) where {T}
     var_index = _moi_add_constrained_variable(
         backend(model),
         variable.scalar_variable,
         variable.set,
         name,
+        T,
     )
     return VariableRef(model, var_index)
 end
 
 function add_variable(
-    model::Model,
+    model::GenericModel,
     variables::AbstractArray{<:VariableConstrainedOnCreation},
     names::AbstractArray{<:String},
 )
@@ -1250,9 +1251,10 @@ function _moi_add_constrained_variable(
     scalar_variable::ScalarVariable,
     set::MOI.AbstractScalarSet,
     name::String,
-)
+    ::Type{T},
+) where {T}
     var_index, con_index = MOI.add_constrained_variable(moi_backend, set)
-    _moi_constrain_variable(moi_backend, var_index, scalar_variable.info)
+    _moi_constrain_variable(moi_backend, var_index, scalar_variable.info, T)
     if !isempty(name)
         MOI.set(moi_backend, MOI.VariableName(), var_index, name)
     end
@@ -1266,7 +1268,7 @@ Vector of variables `scalar_variables` constrained to belong to `set`.
 Adding this variable can be thought as doing:
 ```julia
 function JuMP.add_variable(
-    model::Model,
+    model::GenericModel,
     variable::VariablesConstrainedOnCreation,
     names,
 )
@@ -1308,15 +1310,16 @@ function _vectorize_names(name::String, ::Any)
 end
 
 function add_variable(
-    model::Model,
+    model::GenericModel{T},
     variable::VariablesConstrainedOnCreation,
     names,
-)
+) where {T}
     var_indices = _moi_add_constrained_variables(
         backend(model),
         variable.scalar_variables,
         variable.set,
         _vectorize_names(names, variable.shape),
+        T,
     )
     var_refs = [VariableRef(model, var_index) for var_index in var_indices]
     return reshape_vector(var_refs, variable.shape)
@@ -1327,14 +1330,15 @@ function _moi_add_constrained_variables(
     scalar_variables::Vector{<:ScalarVariable},
     set::MOI.AbstractVectorSet,
     names::Union{Vector{String},Nothing},
-)
+    ::Type{T},
+) where {T}
     if set isa MOI.Reals
         var_indices = MOI.add_variables(moi_backend, MOI.dimension(set))
     else
         var_indices, con_index = MOI.add_constrained_variables(moi_backend, set)
     end
     for (index, variable) in zip(var_indices, scalar_variables)
-        _moi_constrain_variable(moi_backend, index, variable.info)
+        _moi_constrain_variable(moi_backend, index, variable.info, T)
     end
     if names !== nothing
         for (var_index, name) in zip(var_indices, names)
@@ -1448,7 +1452,7 @@ _is_binary(v::ScalarVariable) = v.info.binary
 
 _is_integer(v::ScalarVariable) = v.info.integer
 
-function add_variable(model::Model, v::ComplexVariable, name::String = "")
+function add_variable(model::GenericModel, v::ComplexVariable, name::String = "")
     model.is_model_dirty = true
     var = ScalarVariable(v.info)
     real_part = add_variable(model, _real(var), _real(name))
@@ -1470,7 +1474,7 @@ function build_variable(
 end
 
 function add_variable(
-    model::Model,
+    model::GenericModel,
     variables::AbstractArray{<:ComplexVariable},
     name::Union{<:AbstractArray{String},String} = "",
 )
@@ -1589,7 +1593,7 @@ function _info_from_variable(v::GenericVariableRef)
 end
 
 """
-    relax_integrality(model::Model)
+    relax_integrality(model::GenericModel)
 
 Modifies `model` to "relax" all binary and integrality constraints on
 variables. Specifically,
@@ -1637,14 +1641,14 @@ Subject to
  x binary
 ```
 """
-function relax_integrality(model::Model)
-    if num_constraints(model, VariableRef, MOI.Semicontinuous{Float64}) > 0
+function relax_integrality(model::GenericModel{T}) where {T}
+    if num_constraints(model, VariableRef, MOI.Semicontinuous{T}) > 0
         error(
             "Support for relaxing semicontinuous constraints is not " *
             "yet implemented.",
         )
     end
-    if num_constraints(model, VariableRef, MOI.Semiinteger{Float64}) > 0
+    if num_constraints(model, VariableRef, MOI.Semiinteger{T}) > 0
         error(
             "Support for relaxing semi-integer constraints is not " *
             "yet implemented.",

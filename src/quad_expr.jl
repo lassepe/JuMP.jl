@@ -591,7 +591,7 @@ function moi_function_type(::Type{<:GenericQuadExpr{T}}) where {T}
 end
 
 function GenericQuadExpr{C,VariableRef}(
-    m::Model,
+    m::GenericModel,
     f::MOI.ScalarQuadraticFunction,
 ) where {C}
     quad = GenericQuadExpr{C,VariableRef}(
@@ -612,25 +612,25 @@ function GenericQuadExpr{C,VariableRef}(
     return quad
 end
 function jump_function_type(
-    ::Model,
+    ::GenericModel,
     ::Type{MOI.ScalarQuadraticFunction{T}},
 ) where {T}
     return GenericQuadExpr{T,VariableRef}
 end
 function jump_function(
-    model::Model,
+    model::GenericModel,
     f::MOI.ScalarQuadraticFunction{T},
 ) where {T}
     return GenericQuadExpr{T,VariableRef}(model, f)
 end
 function jump_function_type(
-    ::Model,
+    ::GenericModel,
     ::Type{MOI.VectorQuadraticFunction{T}},
 ) where {T}
     return Vector{GenericQuadExpr{T,VariableRef}}
 end
 function jump_function(
-    model::Model,
+    model::GenericModel,
     f::MOI.VectorQuadraticFunction{T},
 ) where {T}
     return GenericQuadExpr{T,VariableRef}[
