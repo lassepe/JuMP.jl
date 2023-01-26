@@ -1518,7 +1518,7 @@ end
 
 function test_MA_Zero_objective()
     model = Model()
-    @test @objective(model, Min, sum(i for i in 1:0)) === 0.0
+    @test @objective(model, Min, sum(i for i in 1:0)) === false
     return
 end
 
