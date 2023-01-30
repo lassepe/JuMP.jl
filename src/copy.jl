@@ -68,7 +68,9 @@ function Base.getindex(map::GenericReferenceMap, expr::GenericQuadExpr)
     return GenericQuadExpr(aff, terms)
 end
 
-Base.getindex(map::GenericReferenceMap, val::AbstractArray) = getindex.(map, val)
+function Base.getindex(map::GenericReferenceMap, val::AbstractArray)
+    return getindex.(map, val)
+end
 
 Base.broadcastable(reference_map::GenericReferenceMap) = Ref(reference_map)
 

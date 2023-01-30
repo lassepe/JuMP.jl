@@ -815,7 +815,9 @@ Return the index that corresponds to `x` in the optimizer model.
 Throws [`NoOptimizer`](@ref) if no optimizer is set, and throws an
 `ErrorException` if the optimizer is set but is not attached.
 """
-function optimizer_index(x::Union{GenericVariableRef,ConstraintRef{<:GenericModel}})
+function optimizer_index(
+    x::Union{GenericVariableRef,ConstraintRef{<:GenericModel}},
+)
     model = owner_model(x)
     if mode(model) == DIRECT
         return index(x)
