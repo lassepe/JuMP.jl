@@ -87,11 +87,6 @@ function value_type end
 
 value_type(::Type{<:AbstractModel}) = Float64
 
-"""
-    Model
-
-A mathematical model of an optimization problem.
-"""
 mutable struct GenericModel{T} <: AbstractModel
     # In MANUAL and AUTOMATIC modes, CachingOptimizer.
     # In DIRECT mode, will hold an AbstractOptimizer.
