@@ -43,7 +43,7 @@ end
 
 """
     set_optimizer_attribute(
-        model::Union{Model,MOI.OptimizerWithAttributes},
+        model::Union{GenericModel,MOI.OptimizerWithAttributes},
         name::String,
         value,
     )
@@ -62,7 +62,7 @@ set_optimizer_attribute(model, "SolverSpecificAttributeName", true)
 See also: [`set_optimizer_attributes`](@ref), [`get_optimizer_attribute`](@ref).
 """
 function set_optimizer_attribute(
-    model::Union{Model,MOI.OptimizerWithAttributes},
+    model::Union{GenericModel,MOI.OptimizerWithAttributes},
     name::String,
     value,
 )
@@ -72,7 +72,7 @@ end
 
 # This method is needed for string types like String15 coming from a DataFrame.
 function set_optimizer_attribute(
-    model::Union{Model,MOI.OptimizerWithAttributes},
+    model::Union{GenericModel,MOI.OptimizerWithAttributes},
     name::AbstractString,
     value,
 )
@@ -82,7 +82,7 @@ end
 
 """
     set_optimizer_attribute(
-        model::Union{Model,MOI.OptimizerWithAttributes},
+        model::Union{GenericModel,MOI.OptimizerWithAttributes},
         attr::MOI.AbstractOptimizerAttribute,
         value,
     )
@@ -98,7 +98,7 @@ set_optimizer_attribute(model, MOI.Silent(), true)
 See also: [`set_optimizer_attributes`](@ref), [`get_optimizer_attribute`](@ref).
 """
 function set_optimizer_attribute(
-    model::Union{Model,MOI.OptimizerWithAttributes},
+    model::Union{GenericModel,MOI.OptimizerWithAttributes},
     attr::MOI.AbstractOptimizerAttribute,
     value,
 )
@@ -108,7 +108,7 @@ end
 
 """
     set_optimizer_attributes(
-        model::Union{Model,MOI.OptimizerWithAttributes},
+        model::Union{GenericModel,MOI.OptimizerWithAttributes},
         pairs::Pair...,
     )
 
@@ -131,7 +131,7 @@ set_optimizer_attribute(model, "max_iter", 100)
 See also: [`set_optimizer_attribute`](@ref), [`get_optimizer_attribute`](@ref).
 """
 function set_optimizer_attributes(
-    model::Union{Model,MOI.OptimizerWithAttributes},
+    model::Union{GenericModel,MOI.OptimizerWithAttributes},
     pairs::Pair...,
 )
     for (name, value) in pairs
@@ -142,7 +142,7 @@ end
 
 """
     get_optimizer_attribute(
-        model::Union{Model,MOI.OptimizerWithAttributes},
+        model::Union{GenericModel,MOI.OptimizerWithAttributes},
         name::String,
     )
 
@@ -160,7 +160,7 @@ get_optimizer_attribute(model, "SolverSpecificAttributeName")
 See also: [`set_optimizer_attribute`](@ref), [`set_optimizer_attributes`](@ref).
 """
 function get_optimizer_attribute(
-    model::Union{Model,MOI.OptimizerWithAttributes},
+    model::Union{GenericModel,MOI.OptimizerWithAttributes},
     name::String,
 )
     return get_optimizer_attribute(model, MOI.RawOptimizerAttribute(name))
@@ -168,7 +168,7 @@ end
 
 # This method is needed for string types like String15 coming from a DataFrame.
 function get_optimizer_attribute(
-    model::Union{Model,MOI.OptimizerWithAttributes},
+    model::Union{GenericModel,MOI.OptimizerWithAttributes},
     name::AbstractString,
 )
     return get_optimizer_attribute(model, String(name))
@@ -176,7 +176,7 @@ end
 
 """
     get_optimizer_attribute(
-        model::Union{Model,MOI.OptimizerWithAttributes},
+        model::Union{GenericModel,MOI.OptimizerWithAttributes},
         attr::MOI.AbstractOptimizerAttribute,
     )
 
@@ -191,7 +191,7 @@ get_optimizer_attribute(model, MOI.Silent())
 See also: [`set_optimizer_attribute`](@ref), [`set_optimizer_attributes`](@ref).
 """
 function get_optimizer_attribute(
-    model::Union{Model,MOI.OptimizerWithAttributes},
+    model::Union{GenericModel,MOI.OptimizerWithAttributes},
     attr::MOI.AbstractOptimizerAttribute,
 )
     return MOI.get(model, attr)
@@ -808,14 +808,14 @@ end
 
 """
     optimizer_index(x::GenericVariableRef)::MOI.VariableIndex
-    optimizer_index(x::ConstraintRef{Model})::MOI.ConstraintIndex
+    optimizer_index(x::ConstraintRef{<:GenericModel})::MOI.ConstraintIndex
 
 Return the index that corresponds to `x` in the optimizer model.
 
 Throws [`NoOptimizer`](@ref) if no optimizer is set, and throws an
 `ErrorException` if the optimizer is set but is not attached.
 """
-function optimizer_index(x::Union{GenericVariableRef{T},ConstraintRef{Model}})
+function optimizer_index(x::Union{GenericVariableRef,ConstraintRef{<:GenericModel}})
     model = owner_model(x)
     if mode(model) == DIRECT
         return index(x)

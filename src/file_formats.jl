@@ -118,7 +118,7 @@ end
 """
     Base.read(
         io::IO,
-        ::Type{Model};
+        ::Type{<:GenericModel};
         format::MOI.FileFormats.FileFormat,
         kwargs...,
     )
@@ -129,7 +129,7 @@ Other `kwargs` are passed to the `Model` constructor of the chosen format.
 """
 function Base.read(
     io::IO,
-    ::Type{Model};
+    ::Type{<:GenericModel};
     format::MOI.FileFormats.FileFormat,
     kwargs...,
 )

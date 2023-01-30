@@ -649,7 +649,7 @@ See also [`has_lower_bound`](@ref), [`lower_bound`](@ref),
 """
 function LowerBoundRef(v::GenericVariableRef{T}) where {T}
     moi_lb = MOI.ConstraintIndex{MOI.VariableIndex,MOI.GreaterThan{T}}
-    return ConstraintRef{Model,moi_lb,ScalarShape}(
+    return ConstraintRef{GenericModel{T},moi_lb,ScalarShape}(
         owner_model(v),
         _lower_bound_index(v),
         ScalarShape(),
@@ -762,7 +762,7 @@ See also [`has_upper_bound`](@ref), [`upper_bound`](@ref),
 """
 function UpperBoundRef(v::GenericVariableRef{T}) where {T}
     moi_ub = MOI.ConstraintIndex{MOI.VariableIndex,MOI.LessThan{T}}
-    return ConstraintRef{Model,moi_ub,ScalarShape}(
+    return ConstraintRef{GenericModel{T},moi_ub,ScalarShape}(
         owner_model(v),
         _upper_bound_index(v),
         ScalarShape(),
@@ -917,7 +917,7 @@ See also [`is_fixed`](@ref), [`fix_value`](@ref), [`fix`](@ref),
 """
 function FixRef(v::GenericVariableRef{T}) where {T}
     moi_fix = MOI.ConstraintIndex{MOI.VariableIndex,MOI.EqualTo{T}}
-    return ConstraintRef{Model,moi_fix,ScalarShape}(
+    return ConstraintRef{GenericModel{T},moi_fix,ScalarShape}(
         owner_model(v),
         _fix_index(v),
         ScalarShape(),
@@ -989,9 +989,9 @@ Errors if one does not exist.
 
 See also [`is_integer`](@ref), [`set_integer`](@ref), [`unset_integer`](@ref).
 """
-function IntegerRef(v::GenericVariableRef)
+function IntegerRef(v::GenericVariableRef{T}) where {T}
     moi_int = MOI.ConstraintIndex{MOI.VariableIndex,MOI.Integer}
-    return ConstraintRef{Model,moi_int,ScalarShape}(
+    return ConstraintRef{GenericModel{T},moi_int,ScalarShape}(
         owner_model(v),
         _integer_index(v),
         ScalarShape(),
@@ -1064,9 +1064,9 @@ Errors if one does not exist.
 
 See also [`is_binary`](@ref), [`set_binary`](@ref), [`unset_binary`](@ref).
 """
-function BinaryRef(v::GenericVariableRef)
+function BinaryRef(v::GenericVariableRef{T}) where {T}
     moi_bin = MOI.ConstraintIndex{MOI.VariableIndex,MOI.ZeroOne}
-    return ConstraintRef{Model,moi_bin,ScalarShape}(
+    return ConstraintRef{GenericModel{T},moi_bin,ScalarShape}(
         owner_model(v),
         _binary_index(v),
         ScalarShape(),
