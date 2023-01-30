@@ -292,7 +292,7 @@ function _is_lp(model::GenericModel)
         # TODO(odow): support Interval constraints.
         if !(S <: Union{MOI.LessThan,MOI.GreaterThan,MOI.EqualTo})
             return false
-        elseif !(F <: Union{GenericVariableRef{T},GenericAffExpr})
+        elseif !(F <: Union{GenericVariableRef,GenericAffExpr})
             return false
         end
     end
