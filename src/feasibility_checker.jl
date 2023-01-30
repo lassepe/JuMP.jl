@@ -16,7 +16,7 @@ end
 """
     primal_feasibility_report(
         model::GenericModel{T},
-        point::AbstractDict{VariableRef,T} = _last_primal_solution(model),
+        point::AbstractDict{GenericVariableRef{T},T} = _last_primal_solution(model),
         atol::T = zero(T),
         skip_missing::Bool = false,
     )::Dict{Any,T}
@@ -51,7 +51,7 @@ Dict{Any,Float64} with 1 entry:
 """
 function primal_feasibility_report(
     model::GenericModel{T},
-    point::AbstractDict{VariableRef,T} = _last_primal_solution(model);
+    point::AbstractDict{GenericVariableRef{T},T} = _last_primal_solution(model);
     atol::T = zero(T),
     skip_missing::Bool = false,
 ) where {T}

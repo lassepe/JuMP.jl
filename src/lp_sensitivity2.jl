@@ -10,7 +10,7 @@ See [`lp_sensitivity_report`](@ref).
 """
 struct SensitivityReport{T}
     rhs::Dict{ConstraintRef,Tuple{T,T}}
-    objective::Dict{VariableRef,Tuple{T,T}}
+    objective::Dict{GenericVariableRef{T},Tuple{T,T}}
 end
 
 Base.getindex(s::SensitivityReport, c::ConstraintRef) = s.rhs[c]
@@ -100,7 +100,7 @@ function lp_sensitivity_report(
 
     report = SensitivityReport(
         Dict{ConstraintRef,Tuple{T,T}}(),
-        Dict{VariableRef,Tuple{T,T}}(),
+        Dict{GenericVariableRef{T},Tuple{T,T}}(),
     )
 
     ###
@@ -292,7 +292,7 @@ function _is_lp(model::GenericModel)
         # TODO(odow): support Interval constraints.
         if !(S <: Union{MOI.LessThan,MOI.GreaterThan,MOI.EqualTo})
             return false
-        elseif !(F <: Union{VariableRef,GenericAffExpr})
+        elseif !(F <: Union{GenericVariableRef{T},GenericAffExpr})
             return false
         end
     end
@@ -351,10 +351,10 @@ end
 
 function _fill_standard_form(
     model::GenericModel{T},
-    x::Dict{VariableRef,Int},
+    x::Dict{GenericVariableRef{T},Int},
     bound_constraints::Vector{ConstraintRef},
     ::Vector{ConstraintRef},
-    F::Type{VariableRef},
+    F::Type{GenericVariableRef{T}},
     S::Type,
     c_l::Vector{T},
     c_u::Vector{T},
@@ -377,7 +377,7 @@ end
 
 function _fill_standard_form(
     model::GenericModel{T},
-    x::Dict{VariableRef,Int},
+    x::Dict{GenericVariableRef{T},Int},
     ::Vector{ConstraintRef},
     affine_constraints::Vector{ConstraintRef},
     F::Type{<:GenericAffExpr},
