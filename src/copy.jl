@@ -29,26 +29,28 @@ function copy_extension_data(data, ::AbstractModel, ::AbstractModel)
 end
 
 """
-    ReferenceMap
+    GenericReferenceMap{T}
 
 Mapping between variable and constraint reference of a model and its copy. The
 reference of the copied model can be obtained by indexing the map with the
 reference of the corresponding reference of the original model.
 """
-struct ReferenceMap
-    model::GenericModel
+struct GenericReferenceMap{T}
+    model::GenericModel{T}
     index_map::MOIU.IndexMap
 end
 
-function Base.getindex(map::ReferenceMap, vref::GenericVariableRef)
+const ReferenceMap = GenericReferenceMap{Float64}
+
+function Base.getindex(map::GenericReferenceMap, vref::GenericVariableRef)
     return VariableRef(map.model, map.index_map[index(vref)])
 end
 
-function Base.getindex(map::ReferenceMap, cref::ConstraintRef)
+function Base.getindex(map::GenericReferenceMap, cref::ConstraintRef)
     return ConstraintRef(map.model, map.index_map[index(cref)], cref.shape)
 end
 
-function Base.getindex(map::ReferenceMap, expr::GenericAffExpr)
+function Base.getindex(map::GenericReferenceMap, expr::GenericAffExpr)
     result = zero(expr)
     for (coef, var) in linear_terms(expr)
         add_to_expression!(result, coef, map[var])
@@ -57,7 +59,7 @@ function Base.getindex(map::ReferenceMap, expr::GenericAffExpr)
     return result
 end
 
-function Base.getindex(map::ReferenceMap, expr::GenericQuadExpr)
+function Base.getindex(map::GenericReferenceMap, expr::GenericQuadExpr)
     aff = map[expr.aff]
     terms = [
         UnorderedPair(map[key.a], map[key.b]) => val for
@@ -66,9 +68,9 @@ function Base.getindex(map::ReferenceMap, expr::GenericQuadExpr)
     return GenericQuadExpr(aff, terms)
 end
 
-Base.getindex(map::ReferenceMap, val::AbstractArray) = getindex.(map, val)
+Base.getindex(map::GenericReferenceMap, val::AbstractArray) = getindex.(map, val)
 
-Base.broadcastable(reference_map::ReferenceMap) = Ref(reference_map)
+Base.broadcastable(reference_map::GenericReferenceMap) = Ref(reference_map)
 
 # Return a Boolean if the filtering function (1st argument) indicates that the whole value should
 # be copied over.
@@ -89,11 +91,11 @@ end # all(filter_constraints.(value))
 """
     copy_model(model::GenericModel; filter_constraints::Union{Nothing, Function}=nothing)
 
-Return a copy of the model `model` and a [`ReferenceMap`](@ref) that can be used
-to obtain the variable and constraint reference of the new model corresponding
-to a given `model`'s reference. A [`Base.copy(::AbstractModel)`](@ref) method
-has also been implemented, it is similar to `copy_model` but does not return
-the reference map.
+Return a copy of the model `model` and a [`GenericReferenceMap`](@ref) that can
+be used to obtain the variable and constraint reference of the new model
+corresponding to a given `model`'s reference. A
+[`Base.copy(::AbstractModel)`](@ref) method has also been implemented, it is
+similar to `copy_model` but does not return the reference map.
 
 If the `filter_constraints` argument is given, only the constraints for which
 this function returns `true` will be copied. This function is given a
@@ -159,7 +161,7 @@ function copy_model(
         )
     end
 
-    reference_map = ReferenceMap(new_model, index_map)
+    reference_map = GenericReferenceMap(new_model, index_map)
 
     for (name, value) in object_dictionary(model)
         if _should_copy_complete_object(filter_constraints, value)
@@ -226,8 +228,9 @@ end
     copy_conflict(model::GenericModel)
 
 Return a copy of the current conflict for the model `model` and a
-[`ReferenceMap`](@ref) that can be used to obtain the variable and constraint
-reference of the new model corresponding to a given `model`'s reference.
+[`GenericReferenceMap`](@ref) that can be used to obtain the variable and
+constraint reference of the new model corresponding to a given `model`'s
+reference.
 
 This is a convenience function that provides a filtering function for
 [`copy_model`](@ref).
