@@ -207,7 +207,7 @@ Base.imag(v::AbstractVariableRef) = zero(v)
 Base.abs2(v::AbstractVariableRef) = v^2
 
 """
-    GenericVariableRef <: AbstractVariableRef
+    GenericVariableRef{T} <: AbstractVariableRef
 
 Holds a reference to the model and the corresponding MOI.VariableIndex.
 """
