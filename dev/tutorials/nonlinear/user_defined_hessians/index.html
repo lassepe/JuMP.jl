@@ -30,7 +30,7 @@ solution_summary(model; verbose = true)</code></pre><pre class="documenter-examp
 * Candidate solution (result #1)
   Primal status      : FEASIBLE_POINT
   Dual status        : FEASIBLE_POINT
-  Objective value    : 1.20425e-27
+  Objective value    : 1.97708e-29
   Dual objective value : 0.00000e+00
   Primal solution :
     x[1] : 1.00000e+00
@@ -38,7 +38,7 @@ solution_summary(model; verbose = true)</code></pre><pre class="documenter-examp
   Dual solution :
 
 * Work counters
-  Solve time (sec)   : 5.86779e-02
+  Solve time (sec)   : 4.63519e-02
 </code></pre><h2 id="Bilevel-optimization"><a class="docs-heading-anchor" href="#Bilevel-optimization">Bilevel optimization</a><a id="Bilevel-optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Bilevel-optimization" title="Permalink"></a></h2><p>User-defined Hessian functions can be useful when solving more complicated problems. In the rest of this tutorial, our goal is to solve the bilevel optimization problem:</p><p class="math-container">\[\begin{array}{r l}
 \min\limits_{x,z} &amp; x_1^2 + x_2^2 + z \\
 s.t.            &amp; \begin{array}{r l}
@@ -98,13 +98,13 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 0.00000e+00
 
 * Work counters
-  Solve time (sec)   : 1.24223e+00
-</code></pre><p>The optimal objective value is:</p><pre><code class="language-julia hljs">objective_value(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-418983.4868064086</code></pre><p>and the optimal upper-level decision variables <span>$x$</span> are:</p><pre><code class="language-julia hljs">value.(x)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
- 154.97862349841566
- 180.00961418355053</code></pre><p>To compute the optimal lower-level decision variables, we need to call <code>solve_lower_level</code> with the optimal upper-level decision variables:</p><pre><code class="language-julia hljs">_, y = solve_lower_level(value.(x)...)
+  Solve time (sec)   : 8.34535e-01
+</code></pre><p>The optimal objective value is:</p><pre><code class="language-julia hljs">objective_value(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-418983.4868064082</code></pre><p>and the optimal upper-level decision variables <span>$x$</span> are:</p><pre><code class="language-julia hljs">value.(x)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
+ 154.97862339279007
+ 180.00961428934954</code></pre><p>To compute the optimal lower-level decision variables, we need to call <code>solve_lower_level</code> with the optimal upper-level decision variables:</p><pre><code class="language-julia hljs">_, y = solve_lower_level(value.(x)...)
 y</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
- 7.072593960195712
- 5.946569893523139</code></pre><h2 id="Improving-performance"><a class="docs-heading-anchor" href="#Improving-performance">Improving performance</a><a id="Improving-performance-1"></a><a class="docs-heading-anchor-permalink" href="#Improving-performance" title="Permalink"></a></h2><p>Our solution approach works, but it has a performance problem: every time we need to compute the value, gradient, or Hessian of <span>$V$</span>, we have to re-solve the lower-level optimization problem! This is wasteful, because we will often call the gradient and Hessian at the same point, and so solving the problem twice with the same input repeats work unnecessarily.</p><p>We can work around this by using a cache:</p><pre><code class="language-julia hljs">mutable struct Cache
+ 7.0725939609898365
+ 5.946569892949618</code></pre><h2 id="Improving-performance"><a class="docs-heading-anchor" href="#Improving-performance">Improving performance</a><a id="Improving-performance-1"></a><a class="docs-heading-anchor-permalink" href="#Improving-performance" title="Permalink"></a></h2><p>Our solution approach works, but it has a performance problem: every time we need to compute the value, gradient, or Hessian of <span>$V$</span>, we have to re-solve the lower-level optimization problem! This is wasteful, because we will often call the gradient and Hessian at the same point, and so solving the problem twice with the same input repeats work unnecessarily.</p><p>We can work around this by using a cache:</p><pre><code class="language-julia hljs">mutable struct Cache
     x::Any
     f::Float64
     y::Vector{Float64}
@@ -159,7 +159,7 @@ solution_summary(model)</code></pre><pre class="documenter-example-output"><code
   Dual objective value : 0.00000e+00
 
 * Work counters
-  Solve time (sec)   : 3.68932e-01
-</code></pre><p>an we can check we get the same objective value:</p><pre><code class="language-julia hljs">objective_value(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-418983.4868064086</code></pre><p>and upper-level decision variable <span>$x$</span>:</p><pre><code class="language-julia hljs">value.(x)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
- 154.97862349841566
- 180.00961418355053</code></pre><hr/><div class="admonition is-success"><header class="admonition-header">Tip</header><div class="admonition-body"><p>This tutorial was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>. <a href="https://github.com/jump-dev/JuMP.jl/blob/master/docs/src/tutorials/nonlinear/user_defined_hessians.jl">View the source <code>.jl</code> file on GitHub</a>.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tips_and_tricks/">« Tips and tricks</a><a class="docs-footer-nextpage" href="../querying_hessians/">Computing Hessians »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.28.0-DEV on <span class="colophon-date" title="Wednesday 22 February 2023 22:06">Wednesday 22 February 2023</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  Solve time (sec)   : 2.69756e-01
+</code></pre><p>an we can check we get the same objective value:</p><pre><code class="language-julia hljs">objective_value(model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-418983.4868064082</code></pre><p>and upper-level decision variable <span>$x$</span>:</p><pre><code class="language-julia hljs">value.(x)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
+ 154.97862339279007
+ 180.00961428934954</code></pre><hr/><div class="admonition is-success"><header class="admonition-header">Tip</header><div class="admonition-body"><p>This tutorial was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>. <a href="https://github.com/jump-dev/JuMP.jl/blob/master/docs/src/tutorials/nonlinear/user_defined_hessians.jl">View the source <code>.jl</code> file on GitHub</a>.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tips_and_tricks/">« Tips and tricks</a><a class="docs-footer-nextpage" href="../querying_hessians/">Computing Hessians »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.28.0-DEV on <span class="colophon-date" title="Wednesday 22 February 2023 23:31">Wednesday 22 February 2023</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

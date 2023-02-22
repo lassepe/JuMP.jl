@@ -100,7 +100,7 @@ Number of inequality constraint evaluations          = 0
 Number of equality constraint Jacobian evaluations   = 5
 Number of inequality constraint Jacobian evaluations = 0
 Number of Lagrangian Hessian evaluations             = 4
-Total seconds in IPOPT                               = 0.118
+Total seconds in IPOPT                               = 0.103
 
 EXIT: Optimal Solution Found.
 termination_status = LOCALLY_SOLVED
@@ -147,7 +147,7 @@ MLE objective = -1423.76408661786
 
 With constraint μ == σ^2:
 μ                         = 0.6225971004178991
-σ^2                       = 0.6225971004178991
+σ^2                       = 0.622597100417899
 Constrained MLE objective = -1827.5516590930729</code></pre><h2 id="Quadratically-constrained-programs"><a class="docs-heading-anchor" href="#Quadratically-constrained-programs">Quadratically constrained programs</a><a id="Quadratically-constrained-programs-1"></a><a class="docs-heading-anchor-permalink" href="#Quadratically-constrained-programs" title="Permalink"></a></h2><p>A simple quadratically constrained program based on an <a href="https://www.gurobi.com/documentation/9.0/examples/qcp_c_c.html">example from Gurobi</a>.</p><pre><code class="language-julia hljs">function example_qcp()
     model = Model(Ipopt.Optimizer)
     set_silent(model)
@@ -178,6 +178,6 @@ Subject to
  x² - z*y ≤ 0.0
  y ≥ 0.0
  z ≥ 0.0
-Objective value: 0.3269928349138724
-x = 0.3269928349138724
-y = 0.2570658388068964</code></pre><hr/><div class="admonition is-success"><header class="admonition-header">Tip</header><div class="admonition-body"><p>This tutorial was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>. <a href="https://github.com/jump-dev/JuMP.jl/blob/master/docs/src/tutorials/nonlinear/simple_examples.jl">View the source <code>.jl</code> file on GitHub</a>.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../introduction/">« Introduction</a><a class="docs-footer-nextpage" href="../portfolio/">Portfolio optimization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.28.0-DEV on <span class="colophon-date" title="Wednesday 22 February 2023 22:06">Wednesday 22 February 2023</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Objective value: 0.32699283491387243
+x = 0.32699283491387243
+y = 0.2570658388068964</code></pre><hr/><div class="admonition is-success"><header class="admonition-header">Tip</header><div class="admonition-body"><p>This tutorial was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>. <a href="https://github.com/jump-dev/JuMP.jl/blob/master/docs/src/tutorials/nonlinear/simple_examples.jl">View the source <code>.jl</code> file on GitHub</a>.</p></div></div></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../introduction/">« Introduction</a><a class="docs-footer-nextpage" href="../portfolio/">Portfolio optimization »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.28.0-DEV on <span class="colophon-date" title="Wednesday 22 February 2023 23:31">Wednesday 22 February 2023</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
